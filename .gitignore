@@ -6,6 +6,7 @@
 # Uploaded files and generated content
 uploads/
 app/uploads/
+**/uploads/
 
 # Test datasets
 *.csv
