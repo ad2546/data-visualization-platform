@@ -1,160 +1,210 @@
-# Data Visualization with Gemini and FastAPI
+# Power BI Data Visualization Platform
 
-This project demonstrates a web application that leverages Google's Gemini model (via the Agent Development Kit - ADK) to generate data visualizations from uploaded CSV files. The backend is built with FastAPI, and the frontend uses a simple HTML interface with Bootstrap for styling and JavaScript for interactivity.
+An AI-powered business intelligence platform with authentic Power BI design, built with FastAPI and deployed on Google Cloud Platform.
 
-## Features
+## 🚀 Live Application
 
-*   **CSV Upload:** Users can upload CSV files through a web interface (now supports files up to 1GB).
-*   **AI-Powered Visualization:** A Gemini-powered agent analyzes the CSV data and generates multiple HTML-based visualizations.
-*   **Interactive Frontend:** The generated visualizations are displayed directly in the browser.
-*   **Vertex AI Integration:** Configured to use Vertex AI for model inference.
-*   **Blob Storage Support:** Automatic cloud storage for large files using Google Cloud Storage.
-*   **Asynchronous Processing:** Separate upload and generation processes with real-time progress tracking.
-*   **Session Management:** Track and manage processing sessions with cleanup capabilities.
+**Production URL:** https://data-viz-app-957109990200.us-central1.run.app
 
-## Recent Enhancements
+## ✨ Features
 
-### Large Dataset Support
-- Added support for files up to 1GB
-- Automatic sampling for datasets > 100,000 rows (samples 50,000 rows)
-- Efficient memory usage with chunked processing using aiofiles
+### 🎨 Authentic Power BI Design
+- Official Power BI color scheme and styling
+- Professional navigation and sidebar interface
+- Microsoft-inspired design system
+- Responsive layout optimized for business users
 
-### Blob Storage Integration
-- Google Cloud Storage integration for large files
-- Automatic fallback to local storage when cloud storage is unavailable
-- Configurable bucket settings via environment variables
+### 📊 Business Intelligence Dashboard
+- **Agent-based Architecture**: Dual AI agents for optimal visualization recommendations
+  - **Agent 1**: Analyzes data and recommends business-focused visualizations
+  - **Agent 2**: Generates interactive HTML dashboards with Plotly.js
+- **Domain-Aware Analysis**: Automatically detects business domains (sales, finance, marketing, HR, operations, entertainment)
+- **Business-Focused Visualizations**: Filters out technical columns and focuses on actionable insights
 
-### Two-Step Process
-1. **Upload**: Files are uploaded and stored (locally or in cloud)
-2. **Generate**: Visualizations are generated asynchronously with progress tracking
+### 🤖 AI-Powered Features
+- **Smart Column Detection**: Automatically identifies KPIs, trend metrics, and business segments
+- **Business Context Integration**: Optional user context enhances recommendation accuracy
+- **Intelligent Aggregations**: Suggests appropriate data aggregations for meaningful insights
 
-### New API Endpoints
+### 🔄 Enhanced User Experience
+- **Dual New Session Options**: Start fresh from upload area or after viewing dashboard
+- **New Tab Dashboard Opening**: Dashboards open in new browser tabs for better workflow
+- **Real-time Progress Tracking**: Visual feedback during data processing
+- **Drag & Drop File Upload**: Intuitive file upload with validation
 
-- `POST /upload-csv/` - Upload CSV file (returns session ID)
-- `POST /generate/{session_id}` - Start visualization generation
-- `GET /status/{session_id}` - Check processing status with progress
-- `GET /session/{session_id}` - Get session results
-- `DELETE /session/{session_id}` - Delete session and files
-- `GET /cleanup` - Clean up old sessions (now includes blob storage cleanup)
-- `GET /health` - Health check with blob storage status
+### 📈 Supported Data Formats
+- **CSV Files**: Up to 1GB
+- **Excel Files (.xlsx)**: Full spreadsheet support
+- **JSON Files**: Structured data import
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Backend**: FastAPI (Python 3.12)
+- **AI/ML**: Google Cloud Vertex AI, Google ADK
+- **Frontend**: HTML/CSS/JavaScript with Power BI design system
+- **Visualization**: Plotly.js for interactive charts
+- **Storage**: Google Cloud Storage for file handling
+- **Database**: Google Cloud BigQuery integration
+- **Deployment**: Google Cloud Run with Docker
+
+### Agent Architecture
+```
+User Upload → Agent 1 (Recommendations) → Agent 2 (Code Generation) → Dashboard Display
+```
+
+1. **VizRecommendationAgent**: Analyzes top 50 rows, detects business domain, recommends visualizations
+2. **VizCodeGenerator**: Creates interactive HTML dashboards based on recommendations
+
+## 🚀 Deployment
+
+### Google Cloud Run
+- **Platform**: Serverless container deployment
+- **Resources**: 4GB RAM, 2 CPU cores
+- **Scaling**: Automatic based on demand
+- **Region**: us-central1
+
+### Environment Variables
+```bash
+GOOGLE_CLOUD_PROJECT=viz-tool-465716
+GOOGLE_CLOUD_LOCATION=us-central1
+STORAGE_BUCKET_NAME=vector-db22072025
+MAX_FILE_SIZE_MB=1024
+SESSION_CLEANUP_HOURS=24
+```
+
+## 📊 Visualization Types
+
+The platform generates the following business-focused visualizations:
+
+- **KPI Performance Dashboard**: Executive metrics display
+- **Business Trend Analysis**: Time-based performance tracking
+- **Business Segment Analysis**: Category-wise performance comparison
+- **Strategic Correlation Analysis**: Key relationship insights
+- **Market Share Analysis**: Portfolio distribution charts
+- **Performance Benchmarking**: Variance analysis with box plots
+
+## 🎯 Business Domains
+
+Automatically detects and optimizes for:
+- **Sales**: Revenue, orders, customer analysis
+- **Finance**: ROI, cash flow, profit tracking
+- **Marketing**: Campaign performance, conversion analysis
+- **HR**: Employee metrics, performance tracking
+- **Operations**: Inventory, delivery, efficiency metrics
+- **Entertainment**: Content performance, audience analysis
+
+## 📝 API Endpoints
+
+### V2 API (Agent-Based)
+- `POST /api/v2/upload` - Upload data file and start processing
+- `GET /api/v2/status/{session_id}` - Check processing status
+- `GET /api/v2/dashboard/{session_id}` - Retrieve generated dashboard
+- `GET /api/v2/recommendations/{session_id}` - Get AI recommendations
+
+### Utility Endpoints
+- `GET /health` - Health check
+- `GET /` - Power BI interface
+- `DELETE /api/v2/session/{session_id}` - Clean up session
+
+## 🛠️ Development
+
+### Prerequisites
+- Python 3.12+
+- Google Cloud SDK
+- Docker (for containerization)
+
+### Local Development
+```bash
+# Clone the repository
+git clone https://github.com/ad2546/data-visualization-platform.git
+cd data-visualization-platform
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Google Cloud credentials
+
+# Run locally
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Docker Deployment
+```bash
+# Build container
+docker build -t powerbi-viz-platform .
+
+# Run container
+docker run -p 8080:8080 powerbi-viz-platform
+```
+
+## 🚀 Getting Started
+
+1. **Visit the Platform**: https://data-viz-app-957109990200.us-central1.run.app
+2. **Upload Your Data**: Drag & drop or browse for CSV/Excel/JSON files
+3. **Add Context** (Optional): Provide business context for better recommendations
+4. **Generate Dashboard**: AI agents create your business intelligence dashboard
+5. **Explore Insights**: Interactive visualizations open in new tab
+6. **Start New Session**: Use refresh buttons for additional analyses
+
+## 🔒 Security
+
+- **File Validation**: Strict file type and size validation
+- **Data Privacy**: No persistent storage of user data
+- **Session Management**: Automatic cleanup of temporary files
+- **Cloud Security**: Leverages Google Cloud security features
 
 ## Project Structure
 
 ```
 Google-ADK_Test/
-├── .env
-├── pyproject.toml
-├── poetry.lock
-├── readme.md
-├── uploads/ (generated at runtime for uploaded CSVs and visualizations)
+├── .env                    # Environment configuration
+├── Dockerfile             # Container configuration
+├── requirements.txt       # Python dependencies
+├── main.py                # Application entry point
+├── uploads/               # Temporary file storage
 └── app/
-    ├── main.py
+    ├── main.py            # FastAPI application
+    ├── agents/
+    │   ├── viz_recommender.py    # Agent 1: Recommendation engine
+    │   └── viz_generator.py      # Agent 2: Dashboard generator
+    ├── api/
+    │   └── v2_endpoints.py       # V2 API routes
     ├── core/
-    │   └── visualization.py
-    ├── static/
-    │   └── (empty - for future CSS/JS)
-    ├── templates/
-    │   └── index.html
-    ├── agents/ (original agents directory, now under app)
-    └── web/ (original web directory, now under app)
+    │   ├── blob_storage.py       # Cloud storage integration
+    │   ├── vertex_database.py    # BigQuery integration
+    │   └── visualization.py     # Legacy visualization logic
+    └── templates/
+        ├── powerbi_index.html    # Main Power BI interface
+        ├── v2_index.html         # V2 interface
+        └── index.html            # Legacy interface
 ```
 
-*   **`.env`**: Environment variables for configuring API keys and Vertex AI settings.
-*   **`pyproject.toml` / `poetry.lock`**: Poetry dependency management files.
-*   **`readme.md`**: This documentation file.
-*   **`uploads/`**: Directory where uploaded CSV files and generated HTML visualizations are stored.
-*   **`app/`**: Contains the main application logic.
-    *   **`main.py`**: The FastAPI application entry point, handling routes for the web interface and CSV uploads.
-    *   **`core/visualization.py`**: Contains the core logic for processing CSVs, interacting with the Gemini agent, and generating visualizations.
-    *   **`static/`**: Directory for static assets like CSS and JavaScript files (currently empty).
-    *   **`templates/`**: Contains Jinja2 HTML templates for the web interface.
-    *   **`agents/`**: The original `agents` directory, now nested under `app`.
-    *   **`web/`**: The original `web` directory, now nested under `app`.
+## 🤝 Contributing
 
-## Setup and Installation
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository_url>
-    cd Google-ADK_Test
-    ```
+## 📄 License
 
-2.  **Install Poetry (if you haven't already):**
-    ```bash
-    curl -sSL https://install.python-poetry.org | python3 -
-    ```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-3.  **Install dependencies:**
-    ```bash
-    poetry install
-    ```
+## 🙏 Acknowledgments
 
-4.  **Configure environment variables:**
-    Create or update the `.env` file in the project root with your Google Cloud and API keys. Ensure `GOOGLE_GENAI_USE_VERTEXAI` is set to `1` for Vertex AI usage.
+- **Google Cloud Platform** for AI/ML infrastructure
+- **Microsoft Power BI** for design inspiration
+- **Plotly.js** for interactive visualizations
+- **FastAPI** for the robust backend framework
 
-    ```dotenv
-    # Choose Model Backend: 0 -> ML Dev, 1 -> Vertex
-    GOOGLE_GENAI_USE_VERTEXAI=1
+## 📞 Support
 
-    # Vertex backend config
-    GOOGLE_CLOUD_PROJECT=your-gcp-project-id
-    GOOGLE_CLOUD_LOCATION=your-gcp-region # e.g., us-central1
+For support, issues, or feature requests, please create an issue in the GitHub repository.
 
-    # Blob Storage Configuration (optional)
-    STORAGE_BUCKET_NAME=your-bucket-name
+---
 
-    # If using ML Dev backend (GOOGLE_GENAI_USE_VERTEXAI=0), provide your API key:
-    # GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
-    ```
-    Replace `your-gcp-project-id` and `your-gcp-region` with your actual Google Cloud Project ID and desired region.
-    
-    For blob storage, create a Google Cloud Storage bucket and set `STORAGE_BUCKET_NAME` to enable large file support.
-
-5.  **Run the application:**
-    ```bash
-    poetry run python app/main.py
-    ```
-
-    The application will be accessible at `http://0.0.0.0:8000`.
-
-## How it Works
-
-1.  **Frontend (HTML/JavaScript):**
-    *   `app/templates/index.html` provides a simple form to upload a CSV file.
-    *   JavaScript handles the form submission, sending the CSV to the FastAPI backend.
-    *   It displays a loading spinner while the visualization is being generated and then renders the resulting HTML visualization.
-
-2.  **Backend (FastAPI):**
-    *   `app/main.py` defines the API endpoints:
-        *   `/` (GET): Serves the `index.html` page.
-        *   `/upload-csv/` (POST): Receives the uploaded CSV file.
-    *   Upon receiving a CSV, it saves the file to the `uploads/` directory.
-    *   It then calls `generate_visualization` from `app/core/visualization.py`.
-
-3.  **Visualization Generation (Gemini Agent):**
-    *   `app/core/visualization.py` contains the `generate_visualization` asynchronous function.
-    *   It reads the uploaded CSV into a Pandas DataFrame.
-    *   It initializes a `google.adk.agents.LlmAgent` with specific instructions for data visualization and a `get_data` tool.
-    *   The `get_data` tool provides the Pandas DataFrame to the Gemini model.
-    *   The agent is configured to use Vertex AI based on the `.env` settings.
-    *   The agent processes the data and generates raw HTML content for the visualization.
-    *   The generated HTML is saved as a new `.html` file in the `uploads/` directory.
-    *   The path to this HTML file is returned to the frontend.
-
-## Vertex AI Configuration
-
-This application is set up to use Vertex AI as the backend for the Gemini model. Ensure your Google Cloud project is enabled for the Gemini API and that you have authenticated your environment (e.g., `gcloud auth application-default login`).
-
-The `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` variables in your `.env` file are crucial for connecting to the correct Vertex AI endpoint.
-
-## Error Handling
-
-The application includes basic error handling for file uploads and visualization generation. Errors are caught and displayed on the frontend.
-
-## Future Enhancements
-
-*   More sophisticated error handling and logging.
-*   User authentication and session management.
-*   Support for different visualization libraries (e.g., D3.js, Bokeh).
-*   Advanced data preprocessing options.
-*   More detailed agent instructions and tool capabilities.
+**Built with ❤️ using Google Cloud AI and FastAPI**

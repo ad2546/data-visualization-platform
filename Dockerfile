@@ -14,14 +14,13 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY app/ ./app/
-COPY main.py ./
+COPY . .
 
 # Create necessary directories
-RUN mkdir -p uploads app/static
+RUN mkdir -p uploads app/static app/templates
 
-# Expose port
-EXPOSE 8000
+# Expose port for Cloud Run
+EXPOSE 8080
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

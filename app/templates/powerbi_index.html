@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI - Data Analytics Platform</title>
+    
+    <style>
+        /* Microsoft Power BI Authentic Design System */
+        :root {
+            /* Power BI Official Colors */
+            --pbi-yellow: #F2C811;
+            --pbi-dark-blue: #1F2937;
+            --pbi-medium-blue: #374151;
+            --pbi-light-blue: #4F7CAC;
+            --pbi-accent-blue: #118DFF;
+            --pbi-orange: #FF6B35;
+            --pbi-green: #32D74B;
+            --pbi-purple: #BF5AF2;
+            
+            /* UI Colors */
+            --pbi-bg-primary: #F8F9FA;
+            --pbi-bg-secondary: #FFFFFF;
+            --pbi-bg-dark: #1F2937;
+            --pbi-border: #E5E7EB;
+            --pbi-border-dark: #374151;
+            --pbi-text-primary: #1F2937;
+            --pbi-text-secondary: #6B7280;
+            --pbi-text-muted: #9CA3AF;
+            
+            /* Shadows */
+            --pbi-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --pbi-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --pbi-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--pbi-bg-primary);
+            color: var(--pbi-text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Power BI Top Navigation Bar */
+        .pbi-navbar {
+            background: var(--pbi-bg-secondary);
+            border-bottom: 1px solid var(--pbi-border);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: var(--pbi-shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .pbi-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pbi-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--pbi-text-primary);
+        }
+
+        .pbi-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--pbi-yellow) 0%, var(--pbi-orange) 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .pbi-nav-menu {
+            display: flex;
+            gap: 0;
+        }
+
+        .pbi-nav-item {
+            padding: 8px 16px;
+            color: var(--pbi-text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .pbi-nav-item:hover {
+            background: var(--pbi-bg-primary);
+            color: var(--pbi-text-primary);
+        }
+
+        .pbi-nav-item.active {
+            color: var(--pbi-accent-blue);
+            background: rgba(17, 141, 255, 0.1);
+        }
+
+        .pbi-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--pbi-accent-blue);
+        }
+
+        .pbi-nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pbi-nav-button {
+            background: none;
+            border: 1px solid var(--pbi-border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--pbi-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pbi-nav-button:hover {
+            border-color: var(--pbi-accent-blue);
+            color: var(--pbi-accent-blue);
+        }
+
+        .pbi-nav-button.primary {
+            background: var(--pbi-accent-blue);
+            border-color: var(--pbi-accent-blue);
+            color: white;
+        }
+
+        .pbi-nav-button.primary:hover {
+            background: #0d7ce6;
+        }
+
+        /* Main Content Area */
+        .pbi-main {
+            margin-top: 56px;
+            min-height: calc(100vh - 56px);
+            display: flex;
+        }
+
+        /* Sidebar */
+        .pbi-sidebar {
+            width: 250px;
+            background: var(--pbi-bg-secondary);
+            border-right: 1px solid var(--pbi-border);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .pbi-sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .pbi-sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--pbi-text-muted);
+            letter-spacing: 0.5px;
+            padding: 0 20px 8px;
+        }
+
+        .pbi-sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            color: var(--pbi-text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .pbi-sidebar-item:hover {
+            background: var(--pbi-bg-primary);
+            color: var(--pbi-text-primary);
+        }
+
+        .pbi-sidebar-item.active {
+            background: rgba(17, 141, 255, 0.1);
+            color: var(--pbi-accent-blue);
+            border-left-color: var(--pbi-accent-blue);
+        }
+
+        .pbi-sidebar-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        /* Disabled/Unused Elements Styling */
+        .pbi-nav-item.disabled,
+        .pbi-sidebar-item.disabled,
+        .pbi-nav-button.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: not-allowed;
+            color: var(--pbi-text-muted) !important;
+        }
+
+        .pbi-nav-item.disabled:hover,
+        .pbi-sidebar-item.disabled:hover {
+            background: transparent !important;
+            color: var(--pbi-text-muted) !important;
+        }
+
+        /* Content Area */
+        .pbi-content {
+            flex: 1;
+            padding: 24px;
+            background: var(--pbi-bg-primary);
+        }
+
+        /* Welcome Section */
+        .pbi-welcome {
+            background: var(--pbi-bg-secondary);
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--pbi-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pbi-welcome::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pbi-yellow) 0%, var(--pbi-orange) 50%, var(--pbi-accent-blue) 100%);
+        }
+
+        .pbi-welcome-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .pbi-welcome-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--pbi-accent-blue), var(--pbi-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .pbi-welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--pbi-text-primary);
+            margin: 0;
+        }
+
+        .pbi-welcome-subtitle {
+            font-size: 16px;
+            color: var(--pbi-text-secondary);
+            margin: 0;
+        }
+
+        .pbi-welcome-description {
+            font-size: 15px;
+            color: var(--pbi-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* Upload Section */
+        .pbi-upload-section {
+            background: var(--pbi-bg-secondary);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--pbi-shadow);
+        }
+
+        .pbi-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--pbi-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .pbi-section-description {
+            font-size: 14px;
+            color: var(--pbi-text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .pbi-upload-area {
+            border: 2px dashed var(--pbi-border);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: var(--pbi-bg-primary);
+            position: relative;
+        }
+
+        .pbi-upload-area:hover,
+        .pbi-upload-area.dragover {
+            border-color: var(--pbi-accent-blue);
+            background: rgba(17, 141, 255, 0.05);
+        }
+
+        .pbi-upload-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--pbi-accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .pbi-upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--pbi-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .pbi-upload-subtext {
+            font-size: 14px;
+            color: var(--pbi-text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .pbi-upload-button {
+            background: var(--pbi-accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pbi-upload-button:hover {
+            background: #0d7ce6;
+        }
+
+        .pbi-refresh-button {
+            background: linear-gradient(135deg, var(--pbi-accent-blue) 0%, #0F7BD4 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pbi-refresh-button:hover {
+            background: linear-gradient(135deg, #0F7BD4 0%, #0A5A9C 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(17, 141, 255, 0.3);
+        }
+
+        .pbi-button-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .pbi-secondary-button {
+            background: transparent;
+            color: var(--pbi-accent-blue);
+            border: 2px solid var(--pbi-accent-blue);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 16px;
+        }
+
+        .pbi-secondary-button:hover {
+            background: var(--pbi-accent-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(17, 141, 255, 0.25);
+        }
+
+        .pbi-success-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 24px;
+            gap: 16px;
+        }
+
+        .pbi-file-input {
+            display: none;
+        }
+
+        /* Context Input */
+        .pbi-form-group {
+            margin-top: 20px;
+        }
+
+        .pbi-form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--pbi-text-primary);
+            margin-bottom: 6px;
+        }
+
+        .pbi-form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--pbi-border);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.2s ease;
+        }
+
+        .pbi-form-input:focus {
+            outline: none;
+            border-color: var(--pbi-accent-blue);
+            box-shadow: 0 0 0 3px rgba(17, 141, 255, 0.1);
+        }
+
+        /* Processing Section */
+        .pbi-processing-section {
+            background: var(--pbi-bg-secondary);
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--pbi-shadow);
+            text-align: center;
+            display: none;
+        }
+
+        .pbi-processing-animation {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .pbi-processing-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid var(--pbi-border);
+            border-top: 4px solid var(--pbi-accent-blue);
+            border-radius: 50%;
+            animation: pbi-spin 1s linear infinite;
+        }
+
+        @keyframes pbi-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pbi-processing-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--pbi-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .pbi-processing-description {
+            font-size: 14px;
+            color: var(--pbi-text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .pbi-progress-container {
+            background: var(--pbi-border);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .pbi-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pbi-accent-blue), var(--pbi-purple));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pbi-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: pbi-shimmer 2s infinite;
+        }
+
+        @keyframes pbi-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .pbi-progress-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--pbi-text-primary);
+        }
+
+        .pbi-progress-step {
+            font-size: 13px;
+            color: var(--pbi-text-secondary);
+        }
+
+        /* Status Cards */
+        .pbi-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .pbi-status-card {
+            background: var(--pbi-bg-primary);
+            border: 1px solid var(--pbi-border);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .pbi-status-card-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--pbi-accent-blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin: 0 auto 8px;
+            font-size: 14px;
+        }
+
+        .pbi-status-card-title {
+            font-size: 12px;
+            color: var(--pbi-text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pbi-status-card-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--pbi-text-primary);
+        }
+
+        /* Success Section */
+        .pbi-success-section {
+            background: var(--pbi-bg-secondary);
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            box-shadow: var(--pbi-shadow);
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pbi-success-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--pbi-green);
+        }
+
+        .pbi-success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--pbi-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin: 0 auto 20px;
+            font-size: 32px;
+        }
+
+        .pbi-success-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--pbi-text-primary);
+            margin-bottom: 8px;
+        }
+
+        .pbi-success-description {
+            font-size: 16px;
+            color: var(--pbi-text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .pbi-dashboard-button {
+            background: var(--pbi-accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .pbi-dashboard-button:hover {
+            background: #0d7ce6;
+            transform: translateY(-1px);
+        }
+
+        /* Quick Actions */
+        .pbi-quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .pbi-action-card {
+            background: var(--pbi-bg-secondary);
+            border: 1px solid var(--pbi-border);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .pbi-action-card:hover {
+            box-shadow: var(--pbi-shadow);
+            transform: translateY(-2px);
+        }
+
+        .pbi-action-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--pbi-accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .pbi-action-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--pbi-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .pbi-action-description {
+            font-size: 13px;
+            color: var(--pbi-text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .pbi-sidebar {
+                width: 200px;
+            }
+            
+            .pbi-content {
+                padding: 16px;
+            }
+            
+            .pbi-navbar {
+                padding: 0 16px;
+            }
+            
+            .pbi-nav-menu {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .pbi-main {
+                flex-direction: column;
+            }
+            
+            .pbi-sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--pbi-border);
+            }
+            
+            .pbi-welcome {
+                padding: 24px;
+            }
+            
+            .pbi-welcome-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Power BI Navigation Bar -->
+    <nav class="pbi-navbar">
+        <div class="pbi-nav-left">
+            <div class="pbi-logo">
+                <div class="pbi-logo-icon">⚡</div>
+                <span>Power BI</span>
+            </div>
+            <div class="pbi-nav-menu">
+                <a href="#" class="pbi-nav-item active">Home</a>
+                <a href="#" class="pbi-nav-item disabled">Create</a>
+                <a href="#" class="pbi-nav-item disabled">Browse</a>
+                <a href="#" class="pbi-nav-item disabled">Data sources</a>
+            </div>
+        </div>
+        <div class="pbi-nav-right">
+            <button class="pbi-nav-button disabled">Settings</button>
+            <button class="pbi-nav-button disabled">Help</button>
+            <button class="pbi-nav-button primary disabled">Sign in</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="pbi-main">
+        <!-- Sidebar -->
+        <aside class="pbi-sidebar">
+            <div class="pbi-sidebar-section">
+                <div class="pbi-sidebar-title">Create</div>
+                <a href="#" class="pbi-sidebar-item active">
+                    <span class="pbi-sidebar-icon">📊</span>
+                    Upload data
+                </a>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">📈</span>
+                    Reports
+                </a>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">🎯</span>
+                    Dashboards
+                </a>
+            </div>
+            
+            <div class="pbi-sidebar-section">
+                <div class="pbi-sidebar-title">Browse</div>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">🏠</span>
+                    My workspace
+                </a>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">👥</span>
+                    Shared with me
+                </a>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">⭐</span>
+                    Favorites
+                </a>
+            </div>
+            
+            <div class="pbi-sidebar-section">
+                <div class="pbi-sidebar-title">Recent</div>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">📋</span>
+                    Sales Analysis
+                </a>
+                <a href="#" class="pbi-sidebar-item disabled">
+                    <span class="pbi-sidebar-icon">📋</span>
+                    Customer Insights
+                </a>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="pbi-content">
+            <!-- Welcome Section -->
+            <div class="pbi-welcome" id="welcomeSection">
+                <div class="pbi-welcome-header">
+                    <div class="pbi-welcome-icon">🚀</div>
+                    <div>
+                        <h1 class="pbi-welcome-title">Welcome to Power BI</h1>
+                        <p class="pbi-welcome-subtitle">AI-Powered Data Analytics Platform</p>
+                    </div>
+                </div>
+                <p class="pbi-welcome-description">
+                    Transform your data into actionable insights with our intelligent analytics platform. 
+                    Upload your datasets and let our AI agents automatically create stunning visualizations and business insights.
+                </p>
+
+                <!-- Quick Actions -->
+                <div class="pbi-quick-actions">
+                    <div class="pbi-action-card" onclick="showUploadSection()">
+                        <div class="pbi-action-icon">📁</div>
+                        <div class="pbi-action-title">Upload Data</div>
+                        <div class="pbi-action-description">Import CSV, Excel, or JSON files</div>
+                    </div>
+                    <div class="pbi-action-card">
+                        <div class="pbi-action-icon">🔗</div>
+                        <div class="pbi-action-title">Connect to Data</div>
+                        <div class="pbi-action-description">Link to databases and web services</div>
+                    </div>
+                    <div class="pbi-action-card">
+                        <div class="pbi-action-icon">📊</div>
+                        <div class="pbi-action-title">Sample Reports</div>
+                        <div class="pbi-action-description">Explore pre-built analytics</div>
+                    </div>
+                    <div class="pbi-action-card">
+                        <div class="pbi-action-icon">🎓</div>
+                        <div class="pbi-action-title">Learning Center</div>
+                        <div class="pbi-action-description">Tutorials and best practices</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="pbi-upload-section" id="uploadSection" style="display: none;">
+                <h2 class="pbi-section-title">Import your data</h2>
+                <p class="pbi-section-description">
+                    Choose a file to get started. We support CSV, Excel (.xlsx), and JSON formats up to 1GB.
+                </p>
+
+                <div class="pbi-upload-area" id="uploadArea">
+                    <div class="pbi-upload-icon">📁</div>
+                    <div class="pbi-upload-text">Drag and drop your file here</div>
+                    <div class="pbi-upload-subtext">or browse to choose a file</div>
+                    <div class="pbi-button-group">
+                        <button class="pbi-upload-button" onclick="document.getElementById('fileInput').click()">
+                            Browse files
+                        </button>
+                        <button class="pbi-refresh-button" onclick="refreshSession()">
+                            🔄 New Session
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" class="pbi-file-input" accept=".csv,.xlsx,.json">
+                </div>
+
+                <div class="pbi-form-group">
+                    <label class="pbi-form-label" for="contextInput">
+                        Business context (optional)
+                    </label>
+                    <textarea 
+                        id="contextInput" 
+                        class="pbi-form-input" 
+                        placeholder="Describe your data or analysis goals. For example: 'Sales data from our e-commerce platform focusing on customer behavior and revenue trends.'"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Processing Section -->
+            <div class="pbi-processing-section" id="processingSection">
+                <div class="pbi-processing-animation">
+                    <div class="pbi-processing-spinner"></div>
+                </div>
+                <h2 class="pbi-processing-title">Creating your report</h2>
+                <p class="pbi-processing-description">
+                    Our AI is analyzing your data and building intelligent visualizations. This typically takes 2-3 minutes.
+                </p>
+
+                <div class="pbi-progress-container">
+                    <div class="pbi-progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+
+                <div class="pbi-progress-text" id="progressText">Initializing analysis...</div>
+                <div class="pbi-progress-step" id="progressStep">Preparing your data...</div>
+
+                <div class="pbi-status-grid">
+                    <div class="pbi-status-card">
+                        <div class="pbi-status-card-icon">📊</div>
+                        <div class="pbi-status-card-title">Records</div>
+                        <div class="pbi-status-card-value" id="recordCount">-</div>
+                    </div>
+                    <div class="pbi-status-card">
+                        <div class="pbi-status-card-icon">📋</div>
+                        <div class="pbi-status-card-title">Columns</div>
+                        <div class="pbi-status-card-value" id="columnCount">-</div>
+                    </div>
+                    <div class="pbi-status-card">
+                        <div class="pbi-status-card-icon">🎯</div>
+                        <div class="pbi-status-card-title">Insights</div>
+                        <div class="pbi-status-card-value" id="insightCount">-</div>
+                    </div>
+                    <div class="pbi-status-card">
+                        <div class="pbi-status-card-icon">⏱️</div>
+                        <div class="pbi-status-card-title">Est. Time</div>
+                        <div class="pbi-status-card-value" id="timeRemaining">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Section -->
+            <div class="pbi-success-section" id="successSection">
+                <div class="pbi-success-icon">✅</div>
+                <h2 class="pbi-success-title">Your report is ready!</h2>
+                <p class="pbi-success-description">
+                    We've successfully analyzed your data and created an interactive dashboard with key insights and visualizations.
+                </p>
+                <div class="pbi-success-buttons">
+                    <a href="#" class="pbi-dashboard-button" id="dashboardBtn" target="_blank">Open report</a>
+                    <button class="pbi-secondary-button" onclick="refreshSession()">
+                        🔄 New Session
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSessionId = null;
+        let processingInterval = null;
+
+        // UI State Management
+        function showUploadSection() {
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('uploadSection').classList.add('fade-in');
+        }
+
+        function showProcessingSection() {
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('processingSection').style.display = 'block';
+            document.getElementById('successSection').style.display = 'none';
+            document.getElementById('processingSection').classList.add('fade-in');
+        }
+
+        function showSuccessSection() {
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('processingSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'block';
+            document.getElementById('successSection').classList.add('slide-up');
+        }
+
+        function showWelcomeSection() {
+            document.getElementById('welcomeSection').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('processingSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'none';
+        }
+
+        // Drag and Drop Functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        // File Upload Handler
+        async function handleFileUpload(file) {
+            try {
+                // Validate file
+                const allowedTypes = ['.csv', '.xlsx', '.json'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedTypes.includes(fileExtension)) {
+                    alert('Please upload a CSV, Excel, or JSON file.');
+                    return;
+                }
+
+                // Show processing section
+                showProcessingSection();
+
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const contextInput = document.getElementById('contextInput').value;
+                if (contextInput.trim()) {
+                    formData.append('user_context', contextInput.trim());
+                }
+
+                // Upload file
+                const response = await fetch('/api/v2/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Upload failed');
+                }
+
+                // Start monitoring progress
+                currentSessionId = result.session_id;
+                startProgressMonitoring();
+
+                console.log('Upload successful:', result);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+                showWelcomeSection();
+            }
+        }
+
+        // Progress Monitoring
+        function startProgressMonitoring() {
+            if (!currentSessionId) return;
+
+            processingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/v2/status/${currentSessionId}`);
+                    const status = await response.json();
+
+                    updateProgress(status);
+
+                    if (status.status === 'completed') {
+                        clearInterval(processingInterval);
+                        showDashboardReady(status);
+                    } else if (status.status === 'error') {
+                        clearInterval(processingInterval);
+                        showError(status.error);
+                    }
+
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 2000);
+        }
+
+        // Update Progress Display
+        function updateProgress(status) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressStep = document.getElementById('progressStep');
+            const timeRemaining = document.getElementById('timeRemaining');
+
+            // Update progress bar
+            progressBar.style.width = (status.progress || 0) + '%';
+
+            // Update text
+            progressText.textContent = `${status.progress || 0}% Complete`;
+            
+            // Update step description
+            const stepDescriptions = {
+                'data_loading': 'Loading and validating your data...',
+                'agent1_analysis': 'AI Agent analyzing patterns and generating insights...',
+                'agent2_generation': 'Creating interactive visualizations...',
+                'completed': 'Analysis complete!'
+            };
+            
+            progressStep.textContent = stepDescriptions[status.current_step] || 'Processing...';
+            
+            // Update time remaining
+            timeRemaining.textContent = status.estimated_time_remaining || 'Calculating...';
+
+            // Update counts if available
+            if (status.recommendations_count) {
+                document.getElementById('insightCount').textContent = status.recommendations_count;
+            }
+        }
+
+        // Show Dashboard Ready
+        function showDashboardReady(status) {
+            showSuccessSection();
+            
+            // Set dashboard link
+            const dashboardBtn = document.getElementById('dashboardBtn');
+            dashboardBtn.href = `/api/v2/dashboard/${currentSessionId}`;
+        }
+
+        // Show Error
+        function showError(errorMessage) {
+            alert('Processing failed: ' + errorMessage);
+            showWelcomeSection();
+        }
+
+        // Refresh Session
+        function refreshSession() {
+            // Clear current session
+            currentSessionId = null;
+            
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+            document.getElementById('contextInput').value = '';
+            
+            // Show welcome section
+            showWelcomeSection();
+            
+            // Show confirmation
+            const refreshBtn = document.querySelector('.pbi-refresh-button');
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '✅ Session Reset';
+            refreshBtn.style.background = 'linear-gradient(135deg, var(--pbi-green) 0%, #28A745 100%)';
+            
+            setTimeout(() => {
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.style.background = 'linear-gradient(135deg, var(--pbi-accent-blue) 0%, #0F7BD4 100%)';
+            }, 2000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Power BI Analytics Platform initialized');
+            
+            // Add initial animations
+            setTimeout(() => {
+                document.querySelector('.pbi-welcome').classList.add('slide-up');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
