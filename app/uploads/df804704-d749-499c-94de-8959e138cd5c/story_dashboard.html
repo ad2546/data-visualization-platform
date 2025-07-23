@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <script>
+        // Chunked data loading system for large datasets
+        window.sessionId = 'df804704-d749-499c-94de-8959e138cd5c';
+        window.datasetInfo = {
+            totalRows: 8807,
+            columns: 12,
+            columnNames: ['show_id', 'type', 'title', 'director', 'cast', 'country', 'date_added', 'release_year', 'rating', 'duration', 'listed_in', 'description'],
+            columnTypes: {'show_id': 'object', 'type': 'object', 'title': 'object', 'director': 'object', 'cast': 'object', 'country': 'object', 'date_added': 'object', 'release_year': 'int64', 'rating': 'object', 'duration': 'object', 'listed_in': 'object', 'description': 'object'},
+            numericColumns: ['release_year'],
+            categoricalColumns: ['show_id', 'type', 'title', 'director', 'cast', 'country', 'date_added', 'rating', 'duration', 'listed_in', 'description']
+        };
+        
+        // Initialize empty data containers
+        window.dataColumns = {};
+        window.allDataLoaded = false;
+        window.currentOffset = 0;
+        window.chunkSize = 1000;
+        
+        // Load data in chunks to avoid response size limits
+        async function loadDataChunk(start = 0, limit = 1000) {
+            try {
+                const response = await fetch(`/data/${window.sessionId}/chunk?start=${start}&limit=${limit}`);
+                const result = await response.json();
+                
+                if (result.data) {
+                    // Merge new chunk data with existing data
+                    for (const [col, values] of Object.entries(result.data)) {
+                        if (!window.dataColumns[col]) {
+                            window.dataColumns[col] = [];
+                        }
+                        window.dataColumns[col] = window.dataColumns[col].concat(values);
+                    }
+                    
+                    console.log(`Loaded chunk ${start}-${start + result.chunk_size} of ${result.total_rows} rows`);
+                    
+                    // Update loading progress
+                    const progress = Math.min(100, ((start + result.chunk_size) / result.total_rows) * 100);
+                    updateLoadingProgress(progress);
+                    
+                    // Load next chunk if there's more data
+                    if (result.has_more && (start + limit) < result.total_rows) {
+                        return await loadDataChunk(start + limit, limit);
+                    } else {
+                        window.allDataLoaded = true;
+                        console.log('All data loaded successfully');
+                        onDataLoadComplete();
+                        return true;
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error('Error loading data chunk:', error);
+                return false;
+            }
+        }
+        
+        // Show loading progress
+        function updateLoadingProgress(percent) {
+            const progressBar = document.getElementById('dataLoadingProgress');
+            const progressText = document.getElementById('dataLoadingText');
+            if (progressBar) {
+                progressBar.style.width = percent + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `Loading data: ${Math.round(percent)}%`;
+            }
+        }
+        
+        // Called when all data is loaded
+        function onDataLoadComplete() {
+            const loadingDiv = document.getElementById('dataLoadingIndicator');
+            if (loadingDiv) {
+                loadingDiv.style.display = 'none';
+            }
+            
+            // Trigger chart creation/update
+            if (typeof createCharts === 'function') {
+                createCharts();
+            } else {
+                console.log('Data loaded, but createCharts function not found');
+            }
+        }
+        
+        // Utility functions for template compatibility
+        window.getColumn = function(colName) {
+            return window.dataColumns[colName] || [];
+        };
+        
+        window.getNumericColumns = function() {
+            return window.datasetInfo.numericColumns;
+        };
+        
+        window.getCategoricalColumns = function() {
+            return window.datasetInfo.categoricalColumns;
+        };
+        
+        // Auto-start data loading when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Starting chunked data loading for session df804704-d749-499c-94de-8959e138cd5c');
+            loadDataChunk(0, window.chunkSize);
+        });
+        </script>
+        
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Content Analysis Dashboard</title>
+    <!-- Plotly.js CDN for interactive charts -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* General Body and Font Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6; /* Light background for a clean look */
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Dashboard Header Styling */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+        }
+
+        .dashboard-header h1 {
+            color: #2c3e50; /* Darker blue for headings */
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .dashboard-header p {
+            color: #555;
+            font-size: 1.1em;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Chart Grid Layout */
+        .chart-grid {
+            display: grid;
+            /* Creates a responsive 2-column grid, stacking on smaller screens */
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px; /* Space between charts */
+            max-width: 1200px; /* Max width for the grid */
+            margin: 0 auto; /* Center the grid */
+        }
+
+        /* Individual Chart Container Styling */
+        .chart-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Chart Title Styling */
+        .chart-container h3 {
+            text-align: center;
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        /* Plotly Graph Div Styling */
+        .plotly-graph-div {
+            width: 100%;
+            height: 400px; /* Fixed height for consistent chart sizing */
+            margin: 0 auto;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .chart-grid {
+                grid-template-columns: 1fr; /* Stack charts vertically on medium screens */
+            }
+            .dashboard-header h1 {
+                font-size: 2em;
+            }
+            .dashboard-header p {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 15px;
+            }
+            .chart-container {
+                padding: 15px;
+            }
+            .plotly-graph-div {
+                height: 350px; /* Slightly smaller height for very small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+        <div id="dataLoadingIndicator" style="
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            z-index: 1000;">
+            <div id="dataLoadingText">Loading data: 0%</div>
+            <div style="width: 200px; height: 10px; background: #333; border-radius: 5px; margin: 10px auto;">
+                <div id="dataLoadingProgress" style="width: 0%; height: 100%; background: #4CAF50; border-radius: 5px; transition: width 0.3s;"></div>
+            </div>
+        </div>
+        
+
+    <div class="dashboard-header">
+        <h1>Netflix Content Overview Dashboard</h1>
+        <p>An interactive visualization dashboard providing insights into the Netflix content library. Explore the distribution of content types, historical trends, and key relationships within the dataset.</p>
+    </div>
+
+    <div class="chart-grid">
+        <!-- Chart 1: Bar Chart - Content Type Distribution -->
+        <div class="chart-container">
+            <h3>Content Type Distribution</h3>
+            <div id="chart1" class="plotly-graph-div"></div>
+        </div>
+
+        <!-- Chart 2: Line Chart - Titles Added Over Time -->
+        <!-- Note: 'release_year' is a hypothetical column assumed for time-series analysis. -->
+        <div class="chart-container">
+            <h3>Titles Released Per Year</h3>
+            <div id="chart2" class="plotly-graph-div"></div>
+        </div>
+
+        <!-- Chart 3: Scatter Plot - Show Duration vs. Average Rating -->
+        <!-- Note: 'showDuration' (e.g., minutes/seasons) and 'averageRating' (e.g., IMDb score)
+             are hypothetical numeric columns assumed for relationship analysis. -->
+        <div class="chart-container">
+            <h3>Show Duration vs. Average Rating</h3>
+            <div id="chart3" class="plotly-graph-div"></div>
+        </div>
+
+        <!-- Chart 4: Pie Chart - Top Directors' Contribution -->
+        <!-- Note: Data for this chart would involve aggregating content by director and
+             then selecting the top N, with the rest grouped as 'Other'. -->
+        <div class="chart-container">
+            <h3>Top Directors' Content Share</h3>
+            <div id="chart4" class="plotly-graph-div"></div>
+        </div>
+    </div>
+
+    <script>
+        // This 'window.dataColumns' object is a placeholder.
+        // In a real application, it would be populated with actual data
+        // fetched from an API, processed from a database, or loaded from a file.
+        // Example of how the data structure would look:
+        /*
+        window.dataColumns = {
+            typeCountsLabels: ['Movie', 'TV Show'],
+            typeCountsValues: [6131, 2676], // Example counts based on dataset size
+            releaseYears: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021],
+            titlesPerYear: [150, 180, 220, 250, 300, 400, 550, 700, 900, 1100, 1300, 1000], // Example trend
+            showDuration: [90, 120, 60, 150, 45, 100, 75, 110, 80, 95, 130, 50, 115, 85, 105, 70], // Example minutes/seasons
+            averageRating: [7.5, 8.2, 6.8, 9.0, 7.0, 7.8, 6.5, 8.5, 7.2, 7.9, 8.8, 6.0, 7.1, 8.0, 6.9, 8.3], // Example scores
+            topDirectorLabels: ['Rajiv Chilaka', 'Marcus Raboy', 'Cathy Garcia-Molina', 'Jay Karas', 'Other Directors'],
+            topDirectorValues: [22, 15, 13, 12, 4466] // Example counts, 'Other' combines the rest
+        };
+        */
+
+        // Chart 1: Bar Chart - Content Type Distribution
+        // Data Transformation: Aggregation (count of 'Movie' vs 'TV Show')
+        var trace1 = {
+            x: window.dataColumns.typeCountsLabels, // Placeholder for ['Movie', 'TV Show']
+            y: window.dataColumns.typeCountsValues, // Placeholder for [count_movies, count_tv_shows]
+            type: 'bar',
+            marker: {
+                color: ['#4CAF50', '#2196F3'] // Green for Movie, Blue for TV Show
+            }
+        };
+
+        var layout1 = {
+            title: {
+                text: 'Distribution of Movies vs. TV Shows',
+                font: { size: 18, color: '#34495e' }
+            },
+            xaxis: {
+                title: 'Content Type',
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            yaxis: {
+                title: 'Number of Titles',
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            margin: { t: 50, b: 50, l: 60, r: 20 },
+            hovermode: 'closest',
+            plot_bgcolor: '#fcfcfc',
+            paper_bgcolor: '#fff'
+        };
+
+        Plotly.newPlot('chart1', [trace1], layout1, { responsive: true });
+
+        // Chart 2: Line Chart - Titles Released Per Year
+        // Data Transformation: Group by 'release_year' (hypothetical), count titles.
+        var trace2 = {
+            x: window.dataColumns.releaseYears, // Placeholder for [2010, 2011, ..., 2021]
+            y: window.dataColumns.titlesPerYear, // Placeholder for [count_2010, count_2011, ...]
+            mode: 'lines+markers',
+            type: 'scatter',
+            line: {
+                color: '#FF5722', // Orange
+                width: 3
+            },
+            marker: {
+                color: '#FF5722',
+                size: 8,
+                symbol: 'circle'
+            }
+        };
+
+        var layout2 = {
+            title: {
+                text: 'Number of Titles Released by Year',
+                font: { size: 18, color: '#34495e' }
+            },
+            xaxis: {
+                title: 'Release Year',
+                type: 'category', // Treat years as categories to ensure all are shown if sparse
+                tickangle: -45,
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            yaxis: {
+                title: 'Number of Titles',
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            margin: { t: 50, b: 80, l: 60, r: 20 },
+            hovermode: 'x unified',
+            plot_bgcolor: '#fcfcfc',
+            paper_bgcolor: '#fff'
+        };
+
+        Plotly.newPlot('chart2', [trace2], layout2, { responsive: true });
+
+        // Chart 3: Scatter Plot - Show Duration vs. Average Rating
+        // Data Transformation: No explicit aggregation, but data points would be filtered/selected.
+        var trace3 = {
+            x: window.dataColumns.showDuration, // Placeholder for [duration1, duration2, ...]
+            y: window.dataColumns.averageRating, // Placeholder for [rating1, rating2, ...]
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                opacity: 0.7,
+                color: '#9C27B0', // Purple
+                line: {
+                    width: 1,
+                    color: '#7B1FA2'
+                }
+            }
+        };
+
+        var layout3 = {
+            title: {
+                text: 'Show Duration vs. Average Rating (Hypothetical)',
+                font: { size: 18, color: '#34495e' }
+            },
+            xaxis: {
+                title: 'Duration (Minutes/Seasons)',
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            yaxis: {
+                title: 'Average Rating (e.g., IMDb Score)',
+                tickfont: { size: 12 },
+                titlefont: { size: 14 }
+            },
+            margin: { t: 50, b: 50, l: 60, r: 20 },
+            hovermode: 'closest',
+            plot_bgcolor: '#fcfcfc',
+            paper_bgcolor: '#fff'
+        };
+
+        Plotly.newPlot('chart3', [trace3], layout3, { responsive: true });
+
+        // Chart 4: Pie Chart - Content Type Distribution  
+        var trace4 = {
+            labels: window.dataColumns.contentTypes || ['Movie', 'TV Show'],
+            values: window.dataColumns.contentCounts || [4000, 4807],
+            type: 'pie',
+            marker: {
+                colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            },
+            hoverinfo: 'label+percent',
+            textinfo: 'label+percent'
+        };
+
+        var layout4 = {
+            title: {
+                text: 'Content Type Distribution',
+                font: { size: 18, color: '#34495e' }
+            },
+            margin: { t: 50, b: 50, l: 50, r: 50 },
+            paper_bgcolor: '#fff'
+        };
+
+        Plotly.newPlot('chart4', [trace4], layout4, { responsive: true });
+
+        // CRITICAL: Main function to create all charts - REQUIRED for chunked loading
+        function createCharts() {
+            console.log('Creating charts with loaded data...');
+            
+            // Re-execute all chart creation code with loaded data
+            Plotly.newPlot('chart1', [trace1], layout1, { responsive: true });
+            Plotly.newPlot('chart2', [trace2], layout2, { responsive: true });
+            Plotly.newPlot('chart3', [trace3], layout3, { responsive: true });
+            Plotly.newPlot('chart4', [trace4], layout4, { responsive: true });
+        }
+
+        // Initialize charts
+        if (window.dataColumns && Object.keys(window.dataColumns).length > 0) {
+            createCharts();
+        }
+
+    </script>
+</body>
+</html>

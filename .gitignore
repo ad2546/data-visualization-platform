@@ -1,0 +1,45 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Uploaded files and generated content
+uploads/
+app/uploads/
+
+# Test datasets
+*.csv
+test_*.py
+*_test_*.csv
+large_test_dataset.csv
+medium_test_dataset.csv
+small_test_dataset.csv
+very_large_test_dataset.csv
+
+# IDE and OS files
+.DS_Store
+.vscode/
+*.code-workspace
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Dependency files
+poetry.lock
+
+# Logs
+*.log
+
+# Build artifacts
+.docker/
+dist/
+build/
+
+# Cloud build files
+cloudbuild.yaml
+
+# Temporary files
+*.tmp
+*.temp

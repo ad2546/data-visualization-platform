@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataViz AI - Transform Your Data Into Insights</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a35;
+            --bg-tertiary: #252547;
+            --bg-card: #1e1e3f;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-tertiary: #06b6d4;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: #334155;
+            --border-hover: #475569;
+            --gradient-1: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+            --gradient-2: linear-gradient(135deg, #22c55e 0%, #06b6d4 100%);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4);
+            --glow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .container {
+            max-width: 1000px;
+            padding: 2rem;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                max-width: 450px;
+                padding: 1.5rem;
+            }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 2rem;
+            background: rgba(30, 30, 63, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xl), var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                margin-bottom: 2rem;
+                padding: 2rem 1.5rem;
+                border-radius: 24px;
+            }
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.25rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 768px) {
+            .header p {
+                font-size: 1rem;
+            }
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-section {
+            background: rgba(30, 30, 63, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xl);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl), var(--glow);
+        }
+        
+        @media (max-width: 768px) {
+            .upload-section {
+                border-radius: 24px;
+                padding: 1.5rem;
+            }
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.03);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-area {
+                border-radius: 16px;
+                padding: 2rem 1rem;
+            }
+        }
+        
+        .upload-area:hover {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            background: rgba(99, 102, 241, 0.12);
+            border-color: var(--accent-primary);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-icon {
+                font-size: 3rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        .upload-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-title {
+                font-size: 1.2rem;
+                margin-bottom: 0.25rem;
+            }
+        }
+        
+        .upload-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+            border: none;
+        }
+        
+        .file-label:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
+            background: #0056D6;
+        }
+        
+        .file-label:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
+        }
+        
+        .btn-modern {
+            background: var(--accent-primary);
+            border: none;
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+            margin: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
+            background: #0056D6;
+            color: white;
+        }
+        
+        .btn-modern:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
+        }
+        
+        .btn-modern:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border-hover);
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .session-info {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        @media (max-width: 768px) {
+            .session-info {
+                border-radius: 20px;
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        .session-info h6 {
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .session-info-content {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+        
+        .progress-bar-custom {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .visualization-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1.5rem;
+            }
+        }
+        
+        .visualization-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        @media (max-width: 768px) {
+            .visualization-card {
+                border-radius: 20px;
+                padding: 1.25rem;
+            }
+        }
+        
+        .visualization-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--accent-primary);
+        }
+        
+        .visualization-card:active {
+            transform: translateY(-1px);
+        }
+        
+        .visualization-card h5 {
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        
+        @media (max-width: 768px) {
+            .visualization-card h5 {
+                margin-bottom: 0.5rem;
+                font-size: 1.1rem;
+            }
+        }
+        
+        .visualization-card .description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .visualization-card .description {
+                margin-bottom: 1rem;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .status-success {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+        
+        .status-error {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(255, 69, 58, 0.3);
+        }
+        
+        .status-processing {
+            background: rgba(255, 159, 10, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(255, 159, 10, 0.3);
+        }
+        
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--bg-tertiary);
+            border-top: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .alert-modern {
+            background: rgba(255, 69, 58, 0.1);
+            border: 1px solid rgba(255, 69, 58, 0.3);
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 16px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .file-info {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        
+        .view-btn {
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .view-btn:hover {
+            background: #0056D6;
+            color: white;
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-chart-line" style="margin-right: 0.5rem;"></i>
+                DataViz AI Pro
+            </h1>
+            <p>Professional data visualization powered by advanced AI. Create beautiful, interactive dashboards in seconds.</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-title">Upload CSV File</div>
+                        <div class="upload-subtitle">Choose file to create visualization dashboard</div>
+                        <input type="file" id="csvFile" name="file" accept=".csv" class="file-input" required>
+                        <label for="csvFile" class="file-label">
+                            <i class="fas fa-file-csv"></i>
+                            Choose File
+                        </label>
+                    </div>
+                    
+                    <div id="upload-status" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; color: var(--success);">
+                        <i class="fas fa-check-circle"></i> File uploaded successfully! Ready to generate dashboard.
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">
+                        <button type="submit" class="btn-modern" id="upload-btn" style="flex: 1;">
+                            <i class="fas fa-upload"></i>
+                            Upload File
+                        </button>
+                        <button type="button" class="btn-modern" id="generate-btn" style="display: none; flex: 1;">
+                            <i class="fas fa-sparkles"></i>
+                            Generate Dashboard
+                        </button>
+                        <button type="button" class="btn-modern btn-secondary" id="new-session-btn" style="display: none;" onclick="window.location.reload();">
+                            <i class="fas fa-plus"></i>
+                            New Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="focus-section" class="upload-section" style="display: none;">
+                <h6 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">
+                    <i class="fas fa-target"></i> Focus (Optional)
+                </h6>
+                <input 
+                    type="text" 
+                    id="user-focus" 
+                    placeholder="e.g., sales trends, customer behavior, performance metrics"
+                    style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-tertiary); color: var(--text-primary); font-size: 1rem; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='var(--accent-primary)'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
+                    onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none'"
+                />
+            </div>
+        </div>
+
+        <div id="loading-spinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <div class="loading-text">Processing high-volume data in batches and generating multiple visualizations...</div>
+            <div class="timer-container" style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1rem 0;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-clock" style="color: var(--accent-primary);"></i>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Time elapsed:</span>
+                    <span id="timer-display" style="color: var(--accent-primary); font-weight: 600; font-size: 1rem;">00:00</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0%</div>
+            </div>
+        </div>
+
+
+        <div id="visualization-container" class="visualization-grid">
+            <!-- Visualizations will be inserted here -->
+        </div>
+
+        <div id="error-message" class="alert-modern" style="display: none;" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="error-text">An error occurred during visualization generation.</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentSession = null;
+        let currentJobStatus = null;
+        let statusCheckInterval = null;
+        let timerInterval = null;
+        let startTime = null;
+        
+        function updateProgress(percentage) {
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = percentage + '%';
+        }
+        
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timer-display').textContent = display;
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function createVisualizationCard(viz) {
+            const card = document.createElement('div');
+            card.className = 'visualization-card';
+            
+            const statusClass = viz.status === 'success' ? 'status-success' : 
+                               viz.status === 'error' ? 'status-error' : 'status-processing';
+            
+            card.innerHTML = `
+                <h5>${viz.name}</h5>
+                <div class="description">${viz.description || 'Data visualization'}</div>
+                <span class="status-badge ${statusClass}">${viz.status}</span>
+                ${viz.status === 'success' ? 
+                    `<div style="margin-top: 1rem;">
+                        <a href="${viz.path}" target="_blank" class="view-btn">
+                            <i class="fas fa-external-link-alt"></i>
+                            View Visualization
+                        </a>
+                    </div>` : 
+                    viz.status === 'error' ? 
+                    `<div style="margin-top: 0.5rem; color: var(--error); font-size: 0.85rem;">${viz.error || 'Generation failed'}</div>` : 
+                    ''
+                }
+            `;
+            
+            return card;
+        }
+        
+        function displayResults(data) {
+            const container = document.getElementById('visualization-container');
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Add visualization cards
+            data.visualizations.forEach(viz => {
+                const card = createVisualizationCard(viz);
+                container.appendChild(card);
+            });
+            
+            // Show new session button
+            document.getElementById('new-session-btn').style.display = 'inline-flex';
+        }
+        
+        async function checkJobStatus(sessionId) {
+            try {
+                const response = await fetch(`/status/${sessionId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to check status');
+                }
+                
+                const data = await response.json();
+                currentJobStatus = data;
+                
+                // Update progress
+                updateProgress(data.progress || 0);
+                
+                if (data.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    stopTimer();
+                    displayResults(data.results);
+                    document.getElementById('loading-spinner').style.display = 'none';
+                } else if (data.status === 'error') {
+                    clearInterval(statusCheckInterval);
+                    stopTimer();
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = `Error: ${data.error || 'Unknown error'}`;
+                    errorMessage.style.display = 'block';
+                    document.getElementById('loading-spinner').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error checking status:', error);
+                clearInterval(statusCheckInterval);
+                stopTimer();
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+                document.getElementById('loading-spinner').style.display = 'none';
+            }
+        }
+        
+        // File input handler for upload confirmation
+        document.getElementById('csvFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const uploadStatus = document.getElementById('upload-status');
+            const generateBtn = document.getElementById('generate-btn');
+            const focusSection = document.getElementById('focus-section');
+            
+            if (file) {
+                uploadStatus.style.display = 'block';
+                generateBtn.style.display = 'inline-flex';
+                focusSection.style.display = 'block';
+                
+                // Update upload status message
+                uploadStatus.innerHTML = `<i class="fas fa-check-circle"></i> File "${file.name}" ready for upload!`;
+            } else {
+                uploadStatus.style.display = 'none';
+                generateBtn.style.display = 'none';
+                focusSection.style.display = 'none';
+            }
+        });
+
+        // Upload form handler
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const visualizationContainer = document.getElementById('visualization-container');
+            const errorMessage = document.getElementById('error-message');
+            const uploadStatus = document.getElementById('upload-status');
+            const uploadBtn = document.getElementById('upload-btn');
+            const generateBtn = document.getElementById('generate-btn');
+
+            loadingSpinner.style.display = 'block';
+            visualizationContainer.innerHTML = '';
+            errorMessage.style.display = 'none';
+            uploadBtn.disabled = true;
+            
+            updateProgress(0);
+            document.getElementById('progress-text').textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('/upload-csv/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Unknown error');
+                }
+
+                const data = await response.json();
+                currentSession = data.session_id;
+                
+                updateProgress(100);
+                document.getElementById('progress-text').textContent = 'Upload Complete!';
+                
+                // Update upload status to show successful upload
+                uploadStatus.innerHTML = `<i class="fas fa-check-circle"></i> File uploaded successfully! Ready to generate dashboard.`;
+                uploadStatus.style.display = 'block';
+                
+                loadingSpinner.style.display = 'none';
+                uploadBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        // Generate button handler
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            if (!currentSession) {
+                alert('Please upload a file first');
+                return;
+            }
+            
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const errorMessage = document.getElementById('error-message');
+            const generateBtn = document.getElementById('generate-btn');
+            
+            generateBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+            errorMessage.style.display = 'none';
+            
+            updateProgress(0);
+            document.getElementById('progress-text').textContent = 'Starting generation...';
+            startTimer();
+            
+            try {
+                // Get user focus input
+                const userFocus = document.getElementById('user-focus').value.trim();
+                const requestBody = userFocus ? { user_focus: userFocus } : {};
+                
+                const response = await fetch(`/generate/${currentSession}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Unknown error');
+                }
+                
+                const data = await response.json();
+                
+                // Start polling for status
+                statusCheckInterval = setInterval(() => {
+                    checkJobStatus(currentSession);
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                stopTimer();
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

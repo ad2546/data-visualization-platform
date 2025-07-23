@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <script>
+        // Chunked data loading system for large datasets
+        window.sessionId = '7441e922-88b8-4a3f-84f6-f198493f67a9';
+        window.datasetInfo = {
+            totalRows: 28858,
+            columns: 58,
+            columnNames: ['mal_id', 'url', 'approved', 'title', 'title_english', 'title_japanese', 'title_synonyms', 'image_jpg_url', 'image_jpg_small_url', 'image_jpg_large_url', 'image_webp_url', 'image_webp_small_url', 'image_webp_large_url', 'trailer_youtube_id', 'trailer_url', 'trailer_embed_url', 'trailer_image_url', 'trailer_small_image_url', 'trailer_medium_image_url', 'trailer_large_image_url', 'trailer_maximum_image_url', 'type', 'source', 'episodes', 'status', 'airing', 'duration', 'rating', 'score', 'scored_by', 'rank', 'popularity', 'members', 'favorites', 'synopsis', 'background', 'aired_from', 'aired_to', 'aired_prop_from_day', 'aired_prop_from_month', 'aired_prop_from_year', 'aired_prop_to_day', 'aired_prop_to_month', 'aired_prop_to_year', 'aired_string', 'season', 'year', 'broadcast_day', 'broadcast_time', 'broadcast_timezone', 'broadcast_string', 'producers', 'licensors', 'studios', 'genres', 'explicit_genres', 'themes', 'demographics'],
+            columnTypes: {'mal_id': 'int64', 'url': 'object', 'approved': 'bool', 'title': 'object', 'title_english': 'object', 'title_japanese': 'object', 'title_synonyms': 'object', 'image_jpg_url': 'object', 'image_jpg_small_url': 'object', 'image_jpg_large_url': 'object', 'image_webp_url': 'object', 'image_webp_small_url': 'object', 'image_webp_large_url': 'object', 'trailer_youtube_id': 'object', 'trailer_url': 'object', 'trailer_embed_url': 'object', 'trailer_image_url': 'object', 'trailer_small_image_url': 'object', 'trailer_medium_image_url': 'object', 'trailer_large_image_url': 'object', 'trailer_maximum_image_url': 'object', 'type': 'object', 'source': 'object', 'episodes': 'float64', 'status': 'object', 'airing': 'bool', 'duration': 'object', 'rating': 'object', 'score': 'float64', 'scored_by': 'float64', 'rank': 'float64', 'popularity': 'int64', 'members': 'int64', 'favorites': 'int64', 'synopsis': 'object', 'background': 'object', 'aired_from': 'object', 'aired_to': 'object', 'aired_prop_from_day': 'float64', 'aired_prop_from_month': 'float64', 'aired_prop_from_year': 'float64', 'aired_prop_to_day': 'float64', 'aired_prop_to_month': 'float64', 'aired_prop_to_year': 'float64', 'aired_string': 'object', 'season': 'object', 'year': 'float64', 'broadcast_day': 'object', 'broadcast_time': 'object', 'broadcast_timezone': 'object', 'broadcast_string': 'object', 'producers': 'object', 'licensors': 'object', 'studios': 'object', 'genres': 'object', 'explicit_genres': 'float64', 'themes': 'object', 'demographics': 'object'},
+            numericColumns: ['mal_id', 'episodes', 'score', 'scored_by', 'rank', 'popularity', 'members', 'favorites', 'aired_prop_from_day', 'aired_prop_from_month', 'aired_prop_from_year', 'aired_prop_to_day', 'aired_prop_to_month', 'aired_prop_to_year', 'year', 'explicit_genres'],
+            categoricalColumns: ['url', 'title', 'title_english', 'title_japanese', 'title_synonyms', 'image_jpg_url', 'image_jpg_small_url', 'image_jpg_large_url', 'image_webp_url', 'image_webp_small_url', 'image_webp_large_url', 'trailer_youtube_id', 'trailer_url', 'trailer_embed_url', 'trailer_image_url', 'trailer_small_image_url', 'trailer_medium_image_url', 'trailer_large_image_url', 'trailer_maximum_image_url', 'type', 'source', 'status', 'duration', 'rating', 'synopsis', 'background', 'aired_from', 'aired_to', 'aired_string', 'season', 'broadcast_day', 'broadcast_time', 'broadcast_timezone', 'broadcast_string', 'producers', 'licensors', 'studios', 'genres', 'themes', 'demographics']
+        };
+        
+        // Initialize empty data containers
+        window.dataColumns = {};
+        window.allDataLoaded = false;
+        window.currentOffset = 0;
+        window.chunkSize = 1000;
+        
+        // Load data in chunks to avoid response size limits
+        async function loadDataChunk(start = 0, limit = 1000) {
+            try {
+                const response = await fetch(`/data/${window.sessionId}/chunk?start=${start}&limit=${limit}`);
+                const result = await response.json();
+                
+                if (result.data) {
+                    // Merge new chunk data with existing data
+                    for (const [col, values] of Object.entries(result.data)) {
+                        if (!window.dataColumns[col]) {
+                            window.dataColumns[col] = [];
+                        }
+                        window.dataColumns[col] = window.dataColumns[col].concat(values);
+                    }
+                    
+                    console.log(`Loaded chunk ${start}-${start + result.chunk_size} of ${result.total_rows} rows`);
+                    
+                    // Update loading progress
+                    const progress = Math.min(100, ((start + result.chunk_size) / result.total_rows) * 100);
+                    updateLoadingProgress(progress);
+                    
+                    // Load next chunk if there's more data
+                    if (result.has_more && (start + limit) < result.total_rows) {
+                        return await loadDataChunk(start + limit, limit);
+                    } else {
+                        window.allDataLoaded = true;
+                        console.log('All data loaded successfully');
+                        onDataLoadComplete();
+                        return true;
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error('Error loading data chunk:', error);
+                return false;
+            }
+        }
+        
+        // Show loading progress
+        function updateLoadingProgress(percent) {
+            const progressBar = document.getElementById('dataLoadingProgress');
+            const progressText = document.getElementById('dataLoadingText');
+            if (progressBar) {
+                progressBar.style.width = percent + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `Loading data: ${Math.round(percent)}%`;
+            }
+        }
+        
+        // Called when all data is loaded
+        function onDataLoadComplete() {
+            const loadingDiv = document.getElementById('dataLoadingIndicator');
+            if (loadingDiv) {
+                loadingDiv.style.display = 'none';
+            }
+            
+            // Trigger chart creation/update
+            if (typeof createCharts === 'function') {
+                createCharts();
+            } else {
+                console.log('Data loaded, but createCharts function not found');
+            }
+        }
+        
+        // Utility functions for template compatibility
+        window.getColumn = function(colName) {
+            return window.dataColumns[colName] || [];
+        };
+        
+        window.getNumericColumns = function() {
+            return window.datasetInfo.numericColumns;
+        };
+        
+        window.getCategoricalColumns = function() {
+            return window.datasetInfo.categoricalColumns;
+        };
+        
+        // Auto-start data loading when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Starting chunked data loading for session 7441e922-88b8-4a3f-84f6-f198493f67a9');
+            loadDataChunk(0, window.chunkSize);
+        });
+        </script>
+        
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Data Visualization Dashboard</title>
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6; /* Light background */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            flex-grow: 1;
+        }
+
+        /* Header Styling */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dashboard-header h1 {
+            color: #2c3e50; /* Darker blue for title */
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .dashboard-header p {
+            color: #666;
+            font-size: 1.1em;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Chart Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Responsive 2x2 grid */
+            gap: 25px;
+        }
+
+        /* Individual Chart Styling */
+        .chart-container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 992px) {
+            .chart-grid {
+                grid-template-columns: 1fr; /* Stack charts vertically on smaller screens */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .dashboard-header h1 {
+                font-size: 2em;
+            }
+
+            .dashboard-header p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+        <div id="dataLoadingIndicator" style="
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center;
+            z-index: 1000;">
+            <div id="dataLoadingText">Loading data: 0%</div>
+            <div style="width: 200px; height: 10px; background: #333; border-radius: 5px; margin: 10px auto;">
+                <div id="dataLoadingProgress" style="width: 0%; height: 100%; background: #4CAF50; border-radius: 5px; transition: width 0.3s;"></div>
+            </div>
+        </div>
+        
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Anime Data Insights Dashboard</h1>
+            <p>
+                Explore key characteristics of a large anime dataset. This dashboard visualizes distributions,
+                relationships, and compositions using various chart types to reveal insights into anime IDs,
+                titles, and hypothetical metrics.
+            </p>
+        </header>
+
+        <div class="chart-grid">
+            <div class="chart-container">
+                <div id="barChart"></div>
+            </div>
+            <div class="chart-container">
+                <div id="lineChart"></div>
+            </div>
+            <div class="chart-container">
+                <div id="scatterPlot"></div>
+            </div>
+            <div class="chart-container">
+                <div id="pieChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Placeholder data arrays - these would be populated by your backend or data source
+        // In a real application, these would be filled with actual data from your 5000 rows, 58 columns.
+        // For demonstration, we use illustrative values.
+        window.dataColumns = {
+            // mal_id (numeric): range 16.0-62042.0
+            mal_id: Array.from({length: 1000}, (_, i) => Math.floor(Math.random() * (62042 - 16 + 1)) + 16),
+
+            // url (categorical): 4992 unique - not directly used for charts due to high cardinality
+            // title (categorical): 4992 unique - not directly used for charts due to high cardinality
+
+            // title_english (categorical): 2149 unique
+            // For Bar Chart: Top N titles and 'Other'
+            topTitlesEnglish: [
+                "Outlaw Star", "Cowboy Bebop", "Fullmetal Alchemist: Brotherhood", "Attack on Titan",
+                "Spirited Away", "Your Name.", "One Piece", "Naruto: Shippuuden", "Death Note", "Other Titles"
+            ],
+            topTitlesEnglishCounts: [
+                Math.floor(Math.random() * 500) + 100, Math.floor(Math.random() * 400) + 80,
+                Math.floor(Math.random() * 350) + 70, Math.floor(Math.random() * 300) + 60,
+                Math.floor(Math.random() * 250) + 50, Math.floor(Math.random() * 200) + 40,
+                Math.floor(Math.random() * 180) + 30, Math.floor(Math.random() * 150) + 20,
+                Math.floor(Math.random() * 120) + 10, Math.floor(Math.random() * 1000) + 500 // 'Other' category
+            ],
+
+            // For Line Chart: Binned mal_id distribution (simulating a continuous trend/distribution)
+            malIdBins: ["0-10k", "10k-20k", "20k-30k", "30k-40k", "40k-50k", "50k-60k", "60k+"],
+            malIdBinCounts: [
+                Math.floor(Math.random() * 200) + 50, Math.floor(Math.random() * 300) + 100,
+                Math.floor(Math.random() * 400) + 150, Math.floor(Math.random() * 350) + 120,
+                Math.floor(Math.random() * 250) + 80, Math.floor(Math.random() * 150) + 30,
+                Math.floor(Math.random() * 80) + 10
+            ],
+
+            // For Scatter Plot: mal_id vs. a hypothetical numeric column (e.g., 'popularity_score')
+            // Note: 'approved' was N/A, so a second numeric column is simulated for demonstration.
+            hypothetical_score: Array.from({length: 1000}, (_, i) => Math.floor(Math.random() * 100) + 1), // Range 1-100
+
+            // For Pie Chart: Categorized mal_id ranges
+            malIdCategories: ["Low ID (0-20k)", "Mid ID (20k-40k)", "High ID (40k-60k+)"],
+            malIdCategoryCounts: [
+                Math.floor(Math.random() * 1500) + 500, // Low IDs
+                Math.floor(Math.random() * 2000) + 800, // Mid IDs
+                Math.floor(Math.random() * 1000) + 300  // High IDs
+            ]
+        };
+
+        // --- Chart 1: Bar Chart (Top English Titles Distribution) ---
+        var barData = [{
+            x: window.dataColumns.topTitlesEnglish,
+            y: window.dataColumns.topTitlesEnglishCounts,
+            type: 'bar',
+            marker: {
+                color: 'rgba(75, 192, 192, 0.8)',
+                line: {
+                    color: 'rgba(75, 192, 192, 1)',
+                    width: 1
+                }
+            }
+        }];
+
+        var barLayout = {
+            title: 'Top 10 English Anime Titles by Count',
+            xaxis: {
+                title: 'English Title',
+                automargin: true
+            },
+            yaxis: {
+                title: 'Number of Entries'
+            },
+            margin: { t: 50, b: 100, l: 60, r: 20 }, // Adjust margins for long labels
+            hovermode: 'closest',
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff'
+        };
+
+        Plotly.newPlot('barChart', barData, barLayout, { responsive: true });
+
+        // --- Chart 2: Line Chart (Distribution of mal_id Bins) ---
+        var lineData = [{
+            x: window.dataColumns.malIdBins,
+            y: window.dataColumns.malIdBinCounts,
+            mode: 'lines+markers',
+            type: 'scatter',
+            line: {
+                color: 'rgba(153, 102, 255, 0.8)',
+                width: 3
+            },
+            marker: {
+                color: 'rgba(153, 102, 255, 1)',
+                size: 8
+            }
+        }];
+
+        var lineLayout = {
+            title: 'Distribution of Anime IDs (mal_id) by Range',
+            xaxis: {
+                title: 'mal_id Range',
+                type: 'category' // Treat x-axis as categories
+            },
+            yaxis: {
+                title: 'Number of Anime'
+            },
+            margin: { t: 50, b: 60, l: 60, r: 20 },
+            hovermode: 'closest',
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff'
+        };
+
+        Plotly.newPlot('lineChart', lineData, lineLayout, { responsive: true });
+
+        // --- Chart 3: Scatter Plot (mal_id vs. Hypothetical Score) ---
+        var scatterData = [{
+            x: window.dataColumns.mal_id,
+            y: window.dataColumns.hypothetical_score,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                color: 'rgba(255, 159, 64, 0.7)',
+                size: 6,
+                line: {
+                    color: 'rgba(255, 159, 64, 1)',
+                    width: 0.5
+                }
+            }
+        }];
+
+        var scatterLayout = {
+            title: 'Anime ID vs. Hypothetical Popularity Score',
+            xaxis: {
+                title: 'Anime ID (mal_id)'
+            },
+            yaxis: {
+                title: 'Hypothetical Score (1-100)'
+            },
+            margin: { t: 50, b: 60, l: 60, r: 20 },
+            hovermode: 'closest',
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff'
+        };
+
+        Plotly.newPlot('scatterPlot', scatterData, scatterLayout, { responsive: true });
+
+        // --- Chart 4: Pie Chart (Composition of mal_id Categories) ---
+        var pieData = [{
+            labels: window.dataColumns.malIdCategories,
+            values: window.dataColumns.malIdCategoryCounts,
+            type: 'pie',
+            hole: .4, // Donut chart
+            marker: {
+                colors: ['#FF6384', '#36A2EB', '#FFCE56'] // Custom colors
+            },
+            hoverinfo: 'label+percent',
+            textinfo: 'percent',
+            textposition: 'inside',
+            automargin: true
+        }];
+
+        var pieLayout = {
+            title: 'Composition of Anime IDs by Category',
+            margin: { t: 50, b: 20, l: 20, r: 20 },
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff',
+            showlegend: true
+        };
+
+        Plotly.newPlot('pieChart', pieData, pieLayout, { responsive: true });
+    </script>
+</body>
+</html>
