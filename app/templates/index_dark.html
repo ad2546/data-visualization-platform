@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Platform - Dark Mode</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-green: #3fb950;
+            --accent-orange: #f0883e;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+            margin-bottom: 32px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge {
+            background: var(--accent-orange);
+            color: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .upload-section:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #79c0ff;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Context Input */
+        .context-group {
+            margin-top: 20px;
+        }
+
+        .context-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .context-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .context-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        /* Sample Data Section */
+        .sample-data-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .sample-data-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .sample-data-btn:hover {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .sample-data-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sample-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sample-icon {
+            font-size: 18px;
+        }
+
+        .sample-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .sample-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Status Section */
+        .status-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-icon {
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .status-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .metric {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Error Alert */
+        .error-alert {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .error-icon {
+            color: var(--accent-red);
+            font-size: 20px;
+        }
+
+        .error-title {
+            font-weight: 600;
+            color: var(--accent-red);
+        }
+
+        .error-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: 28px;
+        }
+
+        .error-details {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 12px;
+            margin-left: 28px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Visualization Section */
+        .viz-section {
+            display: none;
+        }
+
+        .viz-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .viz-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .viz-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-header {
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .chart-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chart-content {
+            min-height: 400px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .chart-error {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-error-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .chart-error-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .chart-badge {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .chart-badge.llm {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .chart-badge.fallback {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        /* Actions */
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📊</div>
+                <span>Analytics Platform</span>
+                <span class="badge">V3.0 Dark</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadSection">
+            <h2 style="margin-bottom: 8px;">Upload Your Data</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                Upload CSV, Excel, or JSON files. AI-powered analysis will generate insights instantly.
+            </p>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drag & drop your file here</div>
+                <div class="upload-subtext">or click to browse (CSV, XLSX, JSON)</div>
+                <button class="btn" id="chooseFileBtn">
+                    Choose File
+                </button>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.json">
+            </div>
+
+            <div class="context-group">
+                <label class="context-label" for="contextInput">
+                    Business Context (Optional)
+                </label>
+                <textarea
+                    id="contextInput"
+                    class="context-input"
+                    placeholder="E.g., 'Sales data from Q4 2024, focus on regional performance and customer trends'"
+                ></textarea>
+            </div>
+
+            <!-- Sample Data Section -->
+            <div class="sample-data-section" id="sampleDataSection" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                <h3 style="margin-bottom: 12px; font-size: 16px;">
+                    🎯 Try with Sample Data
+                </h3>
+                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+                    Test the platform with pre-loaded datasets featuring KPI-focused visualizations
+                </p>
+                <div id="sampleDataButtons" class="sample-data-buttons">
+                    <!-- Sample data buttons will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div class="error-alert" id="errorAlert">
+            <div class="error-header">
+                <span class="error-icon">⚠️</span>
+                <span class="error-title">Processing Error</span>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="error-details" id="errorDetails" style="display: none;"></div>
+        </div>
+
+        <!-- Status Section -->
+        <div class="status-section" id="statusSection">
+            <div class="status-header">
+                <span class="status-icon">⚙️</span>
+                <span class="status-title">Processing Data...</span>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+
+            <div class="status-text" id="statusText">Initializing...</div>
+
+            <div class="status-metrics">
+                <div class="metric">
+                    <div class="metric-value" id="rowCount">-</div>
+                    <div class="metric-label">Rows</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="colCount">-</div>
+                    <div class="metric-label">Columns</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="chartCount">-</div>
+                    <div class="metric-label">Charts</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="timeLeft">-</div>
+                    <div class="metric-label">Time Left</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Section -->
+        <div class="viz-section" id="vizSection">
+            <div class="viz-header">
+                <div class="viz-title">Interactive Dashboard</div>
+                <div class="viz-subtitle" id="vizSubtitle">AI-generated insights from your data</div>
+            </div>
+
+            <div class="charts-grid" id="chartsGrid">
+                <!-- Charts will be inserted here -->
+            </div>
+
+            <div class="actions">
+                <button class="btn" onclick="downloadDashboard()">
+                    Download Dashboard
+                </button>
+                <button class="btn btn-secondary" onclick="resetApp()">
+                    Upload New File
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let statusInterval = null;
+        let dataCache = null;
+
+        // Upload area interactions
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Click handler for upload area (but not the button)
+        uploadArea.addEventListener('click', (e) => {
+            // Only trigger if clicking the area itself, not the button
+            if (e.target.id !== 'chooseFileBtn' && e.target.tagName !== 'BUTTON') {
+                fileInput.click();
+            }
+        });
+
+        // Button click handler with stopPropagation to prevent double trigger
+        chooseFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling to uploadArea
+            fileInput.click();
+        });
+
+        // File input change handler
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFileUpload(e.target.files[0]);
+        });
+
+        // Load sample datasets on page load
+        async function loadSampleDatasets() {
+            try {
+                const response = await fetch('/api/v2/sample-data/list');
+                const data = await response.json();
+
+                const sampleDataButtons = document.getElementById('sampleDataButtons');
+                sampleDataButtons.innerHTML = '';
+
+                if (data.samples && data.samples.length > 0) {
+                    data.samples.forEach(sample => {
+                        const button = document.createElement('button');
+                        button.className = 'sample-data-btn';
+                        button.innerHTML = `
+                            <div class="sample-name">
+                                <span class="sample-icon">${getSampleIcon(sample.filename)}</span>
+                                <span>${sample.name}</span>
+                            </div>
+                            <div class="sample-description">${sample.description}</div>
+                            <div class="sample-meta">
+                                <span>${sample.rows} rows</span>
+                                <span>${sample.columns} columns</span>
+                            </div>
+                        `;
+                        button.addEventListener('click', () => loadSampleData(sample.filename));
+                        sampleDataButtons.appendChild(button);
+                    });
+                } else {
+                    sampleDataButtons.innerHTML = '<p style="color: var(--text-secondary);">No sample datasets available</p>';
+                }
+            } catch (error) {
+                console.error('Error loading sample datasets:', error);
+                document.getElementById('sampleDataButtons').innerHTML =
+                    '<p style="color: var(--accent-red);">Failed to load sample datasets</p>';
+            }
+        }
+
+        function getSampleIcon(filename) {
+            if (filename.includes('sales')) return '📊';
+            if (filename.includes('hr')) return '👥';
+            if (filename.includes('website') || filename.includes('analytics')) return '🌐';
+            return '📁';
+        }
+
+        // Load sample data
+        async function loadSampleData(filename) {
+            try {
+                // Disable all sample data buttons
+                const buttons = document.querySelectorAll('.sample-data-btn');
+                buttons.forEach(btn => btn.disabled = true);
+
+                // Hide upload, show status
+                document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('statusSection').style.display = 'block';
+                document.getElementById('errorAlert').style.display = 'none';
+
+                // Call load endpoint
+                const response = await fetch(`/api/v2/sample-data/load/${filename}`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load sample data: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                sessionId = data.session_id;
+
+                console.log(`Sample data loaded: ${filename}, Session: ${sessionId}`);
+
+                // Start polling status
+                startStatusPolling();
+
+            } catch (error) {
+                console.error('Sample data load error:', error);
+                showError(`Failed to load sample data: ${error.message}`);
+                document.getElementById('uploadSection').style.display = 'block';
+                document.getElementById('statusSection').style.display = 'none';
+
+                // Re-enable buttons
+                const buttons = document.querySelectorAll('.sample-data-btn');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // Initialize sample datasets
+        loadSampleDatasets();
+
+        // File upload handler
+        async function handleFileUpload(file) {
+            try {
+                // Validate file type
+                const ext = '.' + file.name.split('.').pop().toLowerCase();
+                if (!['.csv', '.xlsx', '.json'].includes(ext)) {
+                    showError('Invalid file type. Please upload CSV, Excel, or JSON files.');
+                    return;
+                }
+
+                // Hide upload, show status
+                document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('statusSection').style.display = 'block';
+                document.getElementById('errorAlert').style.display = 'none';
+
+                // Upload file
+                const formData = new FormData();
+                formData.append('file', file);
+                const context = document.getElementById('contextInput').value.trim();
+                if (context) formData.append('user_context', context);
+
+                const response = await fetch('/api/v2/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Upload failed');
+                }
+
+                sessionId = result.session_id;
+                console.log('Session started:', sessionId);
+
+                // Start polling status
+                startStatusPolling();
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showError('Upload failed: ' + error.message);
+                resetApp();
+            }
+        }
+
+        // Status polling
+        function startStatusPolling() {
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/v2/status/${sessionId}`);
+                    const status = await response.json();
+
+                    updateStatus(status);
+
+                    if (status.status === 'completed') {
+                        clearInterval(statusInterval);
+                        await loadDashboard();
+                    } else if (status.status === 'error') {
+                        clearInterval(statusInterval);
+                        showError('Processing failed', status.error || 'Unknown error');
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 2000);
+        }
+
+        // Update status display
+        function updateStatus(status) {
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
+
+            progressBar.style.width = (status.progress || 0) + '%';
+
+            const stepTexts = {
+                'data_validation': 'Validating data structure...',
+                'business_context': 'Analyzing business context...',
+                'viz_recommendations': 'Generating visualization recommendations...',
+                'code_generation': 'Creating charts...',
+                'completed': 'Complete!'
+            };
+
+            statusText.textContent = stepTexts[status.current_step] || 'Processing...';
+
+            // Update metrics if available
+            if (status.data_info) {
+                document.getElementById('rowCount').textContent = status.data_info.rows || '-';
+                document.getElementById('colCount').textContent = status.data_info.columns || '-';
+            }
+            if (status.recommendations_count) {
+                document.getElementById('chartCount').textContent = status.recommendations_count;
+            }
+        }
+
+        // Load and display dashboard
+        async function loadDashboard() {
+            try {
+                // Fetch dashboard data
+                const response = await fetch(`/api/v2/dashboard/${sessionId}`);
+                const html = await response.text();
+
+                // Parse the HTML to extract data and chart configs
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Extract embedded data from script
+                const scripts = doc.getElementsByTagName('script');
+                for (let script of scripts) {
+                    if (script.textContent.includes('const data =')) {
+                        const dataMatch = script.textContent.match(/const data = (\[.*?\]);/s);
+                        if (dataMatch) {
+                            dataCache = JSON.parse(dataMatch[1]);
+                        }
+                    }
+                }
+
+                // Show visualization section
+                document.getElementById('statusSection').style.display = 'none';
+                document.getElementById('vizSection').style.display = 'block';
+                document.getElementById('vizSection').classList.add('fade-in');
+
+                // Render charts inline
+                await renderChartsInline(html);
+
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                showError('Failed to load dashboard', error.message);
+            }
+        }
+
+        // Render charts inline
+        async function renderChartsInline(html) {
+            const chartsGrid = document.getElementById('chartsGrid');
+            chartsGrid.innerHTML = '';
+
+            // Parse HTML to extract chart functions
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const scripts = doc.getElementsByTagName('script');
+
+            let chartFunctions = [];
+            for (let script of scripts) {
+                const text = script.textContent;
+                // Extract individual chart functions
+                const matches = text.matchAll(/function createChart(\d+)\(\) \{([\s\S]*?)\n        \}/g);
+                for (let match of matches) {
+                    chartFunctions.push({
+                        id: match[1],
+                        code: match[2]
+                    });
+                }
+            }
+
+            // Get chart metadata from containers
+            const containers = doc.querySelectorAll('.chart-container');
+
+            containers.forEach((container, idx) => {
+                const titleEl = container.querySelector('.chart-header h3');
+                const descEl = container.querySelector('.chart-header p');
+                const title = titleEl ? titleEl.textContent : `Chart ${idx + 1}`;
+                const description = descEl ? descEl.textContent : '';
+
+                // Create chart card
+                const chartCard = document.createElement('div');
+                chartCard.className = 'chart-card fade-in';
+                chartCard.innerHTML = `
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            ${title}
+                            <span class="chart-badge llm">AI Generated</span>
+                        </div>
+                        <div class="chart-description">${description}</div>
+                    </div>
+                    <div class="chart-content" id="chart${idx + 1}"></div>
+                `;
+
+                chartsGrid.appendChild(chartCard);
+
+                // Execute chart function
+                try {
+                    const chartFunc = chartFunctions[idx];
+                    if (chartFunc && dataCache) {
+                        // Create function and execute
+                        const funcBody = chartFunc.code;
+                        const execFunc = new Function('data', funcBody);
+                        execFunc(dataCache);
+                    } else {
+                        showChartError(idx + 1, 'Chart code not found');
+                    }
+                } catch (error) {
+                    console.error(`Error rendering chart ${idx + 1}:`, error);
+                    showChartError(idx + 1, error.message);
+                }
+            });
+        }
+
+        // Show chart error
+        function showChartError(chartId, message) {
+            const chartEl = document.getElementById(`chart${chartId}`);
+            if (chartEl) {
+                chartEl.innerHTML = `
+                    <div class="chart-error">
+                        <div class="chart-error-icon">⚠️</div>
+                        <div class="chart-error-text">Failed to render chart</div>
+                        <div class="chart-error-text" style="font-size: 12px; margin-top: 8px;">${message}</div>
+                    </div>
+                `;
+
+                // Update badge
+                const card = chartEl.closest('.chart-card');
+                const badge = card.querySelector('.chart-badge');
+                if (badge) {
+                    badge.textContent = 'Error';
+                    badge.className = 'chart-badge fallback';
+                    badge.style.color = 'var(--accent-red)';
+                    badge.style.borderColor = 'var(--accent-red)';
+                }
+            }
+        }
+
+        // Show error
+        function showError(title, details) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorDetails = document.getElementById('errorDetails');
+
+            errorMessage.textContent = title;
+
+            if (details) {
+                errorDetails.textContent = details;
+                errorDetails.style.display = 'block';
+            } else {
+                errorDetails.style.display = 'none';
+            }
+
+            errorAlert.style.display = 'block';
+            errorAlert.classList.add('fade-in');
+        }
+
+        // Download dashboard
+        async function downloadDashboard() {
+            try {
+                const response = await fetch(`/api/v2/dashboard/${sessionId}`);
+                const html = await response.text();
+
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dashboard_${sessionId}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Download error:', error);
+                showError('Download failed', error.message);
+            }
+        }
+
+        // Reset app
+        function resetApp() {
+            if (statusInterval) clearInterval(statusInterval);
+            sessionId = null;
+            dataCache = null;
+
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('statusSection').style.display = 'none';
+            document.getElementById('vizSection').style.display = 'none';
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('contextInput').value = '';
+            document.getElementById('progressBar').style.width = '0%';
+        }
+    </script>
+</body>
+</html>

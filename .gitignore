@@ -10,6 +10,7 @@ app/uploads/
 
 # Test datasets
 *.csv
+!sample_data/*.csv
 test_*.py
 *_test_*.csv
 large_test_dataset.csv

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-title {
+            font-size: 32px;
+            color: #118DFF;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .dashboard-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .chart-container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .chart-header h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .chart-header p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .chart-content {
+            height: 400px;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+        }
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Business Analytics Dashboard</h1>
+        <p class="dashboard-subtitle">Dataset: 4 rows, 3 columns | Domain: Sales Analytics</p>
+    </div>
+
+    <div class="charts-grid">
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Sales by Region</h3>
+                <p>Compare sales performance across regions</p>
+            </div>
+            <div id="chart1" class="chart-content"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Sales vs Profit Correlation</h3>
+                <p>Analyze relationship between sales and profit</p>
+            </div>
+            <div id="chart2" class="chart-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded dataset
+        const data = [{"region": "North", "sales": 10000, "profit": 2000}, {"region": "South", "sales": 15000, "profit": 3000}, {"region": "East", "sales": 12000, "profit": 2500}, {"region": "West", "sales": 18000, "profit": 4000}];
+
+        // Chart generation functions
+        
+        function createChart1() {
+            try {
+                const trace = {
+    x: data.map(d => d.region),
+    y: data.map(d => d.sales),
+    type: 'bar',
+    marker: { color: '#118DFF' },
+    name: 'Sales by Region'
+};
+                const layout = {
+                    title: '',
+                    showlegend: true,
+                    margin: { t: 20, r: 20, b: 60, l: 60 },
+                    hovermode: 'closest',
+                    plot_bgcolor: 'rgba(240,240,240,0.5)',
+                    paper_bgcolor: 'rgba(255,255,255,0)'
+                };
+                const config = { responsive: true, displayModeBar: true };
+                Plotly.newPlot('chart1', [trace], layout, config);
+                console.log('Chart 1 created successfully');
+            } catch (error) {
+                console.error('Error creating chart 1:', error);
+                document.getElementById('chart1').innerHTML =
+                    '<div class="loading">Error loading chart</div>';
+            }
+        }
+
+        function createChart2() {
+            try {
+                const trace = {
+    x: data.map(d => d.sales),
+    y: data.map(d => d.profit),
+    type: 'scatter',
+    mode: 'markers',
+    marker: { color: '#12239E', size: 10 },
+    name: 'Sales vs Profit'
+};
+                const layout = {
+                    title: '',
+                    showlegend: true,
+                    margin: { t: 20, r: 20, b: 60, l: 60 },
+                    hovermode: 'closest',
+                    plot_bgcolor: 'rgba(240,240,240,0.5)',
+                    paper_bgcolor: 'rgba(255,255,255,0)'
+                };
+                const config = { responsive: true, displayModeBar: true };
+                Plotly.newPlot('chart2', [trace], layout, config);
+                console.log('Chart 2 created successfully');
+            } catch (error) {
+                console.error('Error creating chart 2:', error);
+                document.getElementById('chart2').innerHTML =
+                    '<div class="loading">Error loading chart</div>';
+            }
+        }
+
+        // Initialize all charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loaded with', data.length, 'data points');
+                        createChart1();
+            createChart2();
+        });
+    </script>
+</body>
+</html>

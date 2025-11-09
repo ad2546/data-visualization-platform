@@ -1,0 +1,21 @@
+employee_id,department,position,hire_date,salary,performance_score,training_hours,projects_completed,sick_days,satisfaction_score
+EMP001,Engineering,Senior Engineer,2020-03-15,95000,4.5,40,12,3,4.2
+EMP002,Sales,Account Manager,2019-06-22,75000,4.2,25,18,5,3.9
+EMP003,Marketing,Marketing Specialist,2021-01-10,65000,3.8,30,8,2,4.0
+EMP004,Engineering,Junior Engineer,2022-05-18,60000,4.0,45,6,4,4.3
+EMP005,Sales,Sales Representative,2021-08-30,55000,3.5,20,15,7,3.5
+EMP006,HR,HR Manager,2018-11-12,85000,4.7,35,10,1,4.6
+EMP007,Finance,Financial Analyst,2020-09-05,70000,4.3,28,14,3,4.1
+EMP008,Engineering,Team Lead,2019-02-20,105000,4.8,50,20,2,4.7
+EMP009,Marketing,Content Creator,2022-03-08,58000,3.9,32,9,6,3.8
+EMP010,Sales,Senior Sales Manager,2017-07-14,110000,4.6,22,25,4,4.4
+EMP011,Engineering,Software Engineer,2021-11-25,80000,4.1,42,11,5,4.0
+EMP012,HR,Recruiter,2022-01-30,52000,3.7,26,7,8,3.6
+EMP013,Finance,Accountant,2020-04-17,68000,4.2,24,13,3,4.2
+EMP014,Marketing,Marketing Manager,2019-10-08,90000,4.5,38,16,2,4.5
+EMP015,Engineering,Senior Engineer,2018-12-03,98000,4.9,48,22,1,4.8
+EMP016,Sales,Account Executive,2021-06-19,72000,4.0,27,17,6,3.9
+EMP017,Finance,CFO,2016-05-22,150000,4.8,30,30,2,4.7
+EMP018,Engineering,DevOps Engineer,2020-08-11,88000,4.4,44,15,4,4.3
+EMP019,Marketing,Social Media Manager,2022-02-14,62000,3.8,29,10,5,3.9
+EMP020,Sales,Business Development,2019-09-27,78000,4.3,23,19,3,4.2

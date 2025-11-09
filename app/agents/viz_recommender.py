@@ -1,17 +1,17 @@
 """
 Agent 1: Visualization Recommendation Engine
-Analyzes top 50 rows from vector DB and recommends optimal visualizations
+Uses business context from Business Context Agent
 """
 
 import pandas as pd
-import numpy as np
 import logging
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any
 from dataclasses import dataclass
 import json
-from app.core.vertex_database import VertexDatabase, initialize_vertex_database
+from app.core.openrouter_client import openrouter_client
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class VizRecommendation:
@@ -22,550 +22,393 @@ class VizRecommendation:
     x_column: str
     y_column: str = None
     color_column: str = None
-    size_column: str = None
     aggregation: str = None
-    filters: List[str] = None
     business_context: str = None
-    priority: int = 1  # 1=high, 2=medium, 3=low
+    priority: int = 1
+
 
 class VizRecommendationAgent:
     """
-    Agent 1: Analyzes data sample and recommends visualizations
+    Agent 1: Analyzes data with business context and recommends visualizations
     """
     
-    def __init__(self, project_id: str = None, location: str = None):
-        # Initialize with credentials from environment
-        import os
-        self.project_id = project_id or os.getenv('GOOGLE_CLOUD_PROJECT')
-        self.location = location or os.getenv('GOOGLE_CLOUD_LOCATION', 'us-central1')
-        
-        # Initialize Vertex Database if credentials are available
-        if self.project_id:
-            try:
-                self.vector_db = initialize_vertex_database(self.project_id, self.location)
-                logger.info(f"Vertex Database initialized for project: {self.project_id}")
-            except Exception as e:
-                logger.warning(f"Could not initialize Vertex Database: {str(e)}")
-                self.vector_db = None
-        else:
-            logger.warning("No Google Cloud Project ID found, vector database disabled")
-            self.vector_db = None
-        
+    def __init__(self):
         self.sample_size = 50
-        
-        # Chart type configurations
-        self.chart_configs = {
-            'bar': {
-                'best_for': ['categorical_vs_numeric', 'comparison', 'ranking'],
-                'requires': ['categorical_x', 'numeric_y'],
-                'max_categories': 20
-            },
-            'line': {
-                'best_for': ['time_series', 'trends', 'continuous_data'],
-                'requires': ['datetime_or_numeric_x', 'numeric_y'],
-                'min_points': 3
-            },
-            'scatter': {
-                'best_for': ['correlation', 'relationship', 'outlier_detection'],
-                'requires': ['numeric_x', 'numeric_y'],
-                'min_points': 10
-            },
-            'pie': {
-                'best_for': ['composition', 'parts_of_whole'],
-                'requires': ['categorical_x', 'numeric_y'],
-                'max_categories': 8
-            },
-            'heatmap': {
-                'best_for': ['correlation_matrix', 'two_dimensional_categorical'],
-                'requires': ['two_categorical_or_correlation'],
-                'min_unique_values': 3
-            },
-            'histogram': {
-                'best_for': ['distribution', 'frequency_analysis'],
-                'requires': ['numeric_x'],
-                'min_unique_values': 5
-            },
-            'box': {
-                'best_for': ['distribution_comparison', 'outlier_detection'],
-                'requires': ['categorical_group', 'numeric_values'],
-                'min_groups': 2
-            }
-        }
     
-    def analyze_and_recommend(self, df: pd.DataFrame, user_context: str = None, session_id: str = None) -> List[VizRecommendation]:
+    def analyze_and_recommend(self, df: pd.DataFrame, business_context: Dict[str, Any], session_id: str = None) -> List[VizRecommendation]:
         """
-        Main method: Analyze data and return visualization recommendations
+        Main method: Analyze data with business context and return visualization recommendations
+        
+        Args:
+            df: DataFrame to analyze
+            business_context: Business context from Business Context Agent
+            session_id: Optional session ID
         """
         try:
-            logger.info(f"Starting visualization analysis for dataset: {len(df)} rows, {len(df.columns)} columns")
+            logger.info(f"Starting visualization analysis with business context: {business_context.get('domain')}")
             
-            # Step 1: Get sample data (top 50 rows) and store in vector DB
-            sample_df = self._get_sample_data(df, session_id)
+            # Get sample data
+            sample_df = df.head(self.sample_size).copy()
             
-            # Step 2: Analyze data characteristics
-            data_profile = self._profile_data(sample_df)
+            # Create prompt using business context
+            prompt = self._create_recommendation_prompt(sample_df, df, business_context)
             
-            # Step 3: Detect business domain and context
-            business_context = self._detect_business_domain(sample_df, user_context)
+            # Log input
+            logger.info("=" * 80)
+            logger.info("STAGE 1: VISUALIZATION RECOMMENDER - INPUT")
+            logger.info("=" * 80)
+            logger.info(f"Model: {openrouter_client.model}")
+            logger.info(f"Prompt Length: {len(prompt)} chars")
+            logger.info(f"Business Domain: {business_context.get('domain', 'unknown')}")
+            logger.info(f"Key Metrics: {business_context.get('key_metrics', [])}")
+            logger.info(f"Columns to Exclude: {business_context.get('columns_to_exclude', [])}")
+            logger.info(f"Columns to Prioritize: {business_context.get('columns_to_prioritize', [])}")
+            logger.info("\n--- PROMPT PREVIEW (first 500 chars) ---")
+            logger.info(prompt[:500] + "..." if len(prompt) > 500 else prompt)
+            logger.info("=" * 80)
             
-            # Step 4: Generate visualization recommendations
-            recommendations = self._generate_recommendations(sample_df, data_profile, business_context)
+            # Call OpenRouter (can use free model here too, or paid for better quality)
+            response = openrouter_client.generate_content(
+                prompt=prompt,
+                system_prompt="You are a data visualization expert specializing in business intelligence dashboards.",
+                max_tokens=2048,
+                temperature=0.3
+            )
             
-            # Step 5: Rank and filter recommendations
-            final_recommendations = self._rank_recommendations(recommendations, data_profile)
+            # Log output
+            logger.info("=" * 80)
+            logger.info("STAGE 1: VISUALIZATION RECOMMENDER - OUTPUT")
+            logger.info("=" * 80)
+            if response:
+                logger.info(f"Response Length: {len(response)} chars")
+                logger.info("\n--- RESPONSE PREVIEW (first 1000 chars) ---")
+                logger.info(response[:1000] + "..." if len(response) > 1000 else response)
+            else:
+                logger.warning("OpenRouter returned no response")
+            logger.info("=" * 80)
             
-            logger.info(f"Generated {len(final_recommendations)} visualization recommendations")
-            return final_recommendations
+            if not response:
+                logger.warning("OpenRouter returned no response, using fallback recommendations")
+                return self._get_fallback_recommendations(df, business_context)
+            
+            # Parse recommendations from response
+            recommendations = self._parse_recommendations(response, df, business_context)
+            
+            # Log parsed recommendations
+            logger.info("=" * 80)
+            logger.info("STAGE 1: VISUALIZATION RECOMMENDER - PARSED RESULT")
+            logger.info("=" * 80)
+            logger.info(f"Total Recommendations: {len(recommendations)}")
+            for i, rec in enumerate(recommendations, 1):
+                logger.info(f"\nRecommendation {i}:")
+                logger.info(f"  Chart Type: {rec.chart_type}")
+                logger.info(f"  Title: {rec.title}")
+                logger.info(f"  X Column: {rec.x_column}")
+                logger.info(f"  Y Column: {rec.y_column or 'N/A'}")
+                logger.info(f"  Priority: {rec.priority}")
+            logger.info("=" * 80)
+            
+            logger.info(f"Generated {len(recommendations)} visualization recommendations")
+            return recommendations
             
         except Exception as e:
             logger.error(f"Error in visualization analysis: {str(e)}")
-            return self._get_fallback_recommendations(df)
+            return self._get_fallback_recommendations(df, business_context)
     
-    def _get_sample_data(self, df: pd.DataFrame, session_id: str = None) -> pd.DataFrame:
-        """Get top 50 rows and optionally store in vector DB"""
-        try:
-            # Get sample
-            sample_df = df.head(self.sample_size).copy()
-            
-            # Store in vector database for future reference
-            if self.vector_db and session_id:
-                try:
-                    table_id = self.vector_db.ingest_csv_data(sample_df, f"sample_{session_id}")
-                    logger.info(f"Stored {len(sample_df)} sample rows in Vertex Database as table: {table_id}")
-                    
-                    # Store table_id for later retrieval
-                    session_dir = f"app/uploads/{session_id}"
-                    import os
-                    os.makedirs(session_dir, exist_ok=True)
-                    
-                    with open(f"{session_dir}/vector_table_id.txt", 'w') as f:
-                        f.write(table_id)
-                        
-                except Exception as e:
-                    logger.warning(f"Could not store in Vertex Database: {str(e)}")
-            
-            return sample_df
-            
-        except Exception as e:
-            logger.error(f"Error getting sample data: {str(e)}")
-            return df.head(10)  # Fallback to smaller sample
-    
-    def _profile_data(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """Create comprehensive data profile"""
-        try:
-            profile = {
-                'total_rows': len(df),
-                'total_columns': len(df.columns),
-                'column_types': {},
-                'numeric_columns': [],
-                'categorical_columns': [],
-                'datetime_columns': [],
-                'text_columns': [],
-                'column_stats': {},
-                'data_quality': {}
-            }
-            
-            for col in df.columns:
-                col_data = df[col]
-                
-                # Determine column type
-                if pd.api.types.is_numeric_dtype(col_data):
-                    col_type = 'numeric'
-                    profile['numeric_columns'].append(col)
-                elif pd.api.types.is_datetime64_any_dtype(col_data):
-                    col_type = 'datetime'
-                    profile['datetime_columns'].append(col)
-                elif col_data.dtype == 'object':
-                    # Distinguish between categorical and text
-                    unique_ratio = col_data.nunique() / len(col_data)
-                    if unique_ratio < 0.5 and col_data.nunique() < 50:
-                        col_type = 'categorical'
-                        profile['categorical_columns'].append(col)
-                    else:
-                        col_type = 'text'
-                        profile['text_columns'].append(col)
+    def _analyze_columns(self, df: pd.DataFrame, exclude_cols: list) -> Dict[str, Any]:
+        """Analyze columns to identify good metrics vs dimensions vs IDs"""
+        analysis = {
+            'good_metrics': [],
+            'good_dimensions': [],
+            'id_columns': [],
+            'date_columns': [],
+            'text_columns': []
+        }
+
+        for col in df.columns:
+            if col in exclude_cols:
+                continue
+
+            col_lower = col.lower()
+
+            # Identify ID columns (don't use as metrics)
+            if any(pattern in col_lower for pattern in ['_id', 'id_', 'identifier', 'uuid', 'guid', 'key']):
+                analysis['id_columns'].append(col)
+                continue
+
+            # Check data type
+            dtype = df[col].dtype
+
+            # Numeric columns (potential metrics)
+            if pd.api.types.is_numeric_dtype(dtype):
+                # Check if it's actually a count/amount (good metric)
+                if any(pattern in col_lower for pattern in [
+                    'count', 'total', 'amount', 'sum', 'avg', 'average',
+                    'victim', 'offense', 'incident', 'arrest', 'population',
+                    'rate', 'percent', 'ratio', 'score', 'value', 'number'
+                ]):
+                    analysis['good_metrics'].append(col)
+                # Check if it's a year/date field (dimension, not metric)
+                elif any(pattern in col_lower for pattern in ['year', 'month', 'day', 'quarter']):
+                    analysis['date_columns'].append(col)
+                    analysis['good_dimensions'].append(col)
                 else:
-                    col_type = 'other'
-                
-                profile['column_types'][col] = col_type
-                
-                # Column statistics
-                profile['column_stats'][col] = {
-                    'unique_count': col_data.nunique(),
-                    'null_count': col_data.isnull().sum(),
-                    'null_percentage': (col_data.isnull().sum() / len(col_data)) * 100
-                }
-                
-                # Add type-specific stats
-                if col_type == 'numeric':
-                    profile['column_stats'][col].update({
-                        'min': float(col_data.min()) if not col_data.isnull().all() else None,
-                        'max': float(col_data.max()) if not col_data.isnull().all() else None,
-                        'mean': float(col_data.mean()) if not col_data.isnull().all() else None,
-                        'std': float(col_data.std()) if not col_data.isnull().all() else None
-                    })
-                elif col_type == 'categorical':
-                    value_counts = col_data.value_counts()
-                    profile['column_stats'][col].update({
-                        'top_values': value_counts.head(5).to_dict(),
-                        'cardinality': len(value_counts)
-                    })
-            
-            return profile
-            
-        except Exception as e:
-            logger.error(f"Error profiling data: {str(e)}")
-            return {'error': str(e)}
+                    # Default: numeric = potential metric
+                    analysis['good_metrics'].append(col)
+
+            # Date/datetime columns
+            elif pd.api.types.is_datetime64_any_dtype(dtype):
+                analysis['date_columns'].append(col)
+                analysis['good_dimensions'].append(col)
+
+            # Categorical/text columns (dimensions)
+            elif pd.api.types.is_object_dtype(dtype) or pd.api.types.is_categorical_dtype(dtype):
+                unique_count = df[col].nunique()
+                total_count = len(df)
+
+                # Good dimension if reasonable number of unique values (2-100)
+                if 2 <= unique_count <= 100:
+                    analysis['good_dimensions'].append(col)
+                # Too many unique values might be text/description
+                elif unique_count > 100:
+                    analysis['text_columns'].append(col)
+                # Single value columns are not useful
+                elif unique_count == 1:
+                    pass
+
+        # Format for prompt
+        result = f"""
+Metrics (use for Y-axis, measurements):
+  {', '.join(analysis['good_metrics']) if analysis['good_metrics'] else 'None found'}
+
+Dimensions (use for X-axis, categories):
+  {', '.join(analysis['good_dimensions']) if analysis['good_dimensions'] else 'None found'}
+
+Date Fields (use for time series):
+  {', '.join(analysis['date_columns']) if analysis['date_columns'] else 'None found'}
+
+ID Fields (DO NOT use as metrics):
+  {', '.join(analysis['id_columns']) if analysis['id_columns'] else 'None found'}
+"""
+
+        return {
+            **analysis,
+            'formatted': result
+        }
+
+    def _create_recommendation_prompt(self, sample_df: pd.DataFrame, full_df: pd.DataFrame, business_context: Dict[str, Any]) -> str:
+        """Create prompt using business context"""
+
+        # Filter columns based on business context
+        exclude_cols = business_context.get("columns_to_exclude", [])
+        prioritize_cols = business_context.get("columns_to_prioritize", [])
+
+        available_cols = [col for col in full_df.columns if col not in exclude_cols]
+
+        # Analyze column types and characteristics
+        column_analysis = self._analyze_columns(full_df, exclude_cols)
+
+        prompt = f"""You are a business intelligence visualization expert. Based on the business context analysis, recommend the best visualizations.
+
+BUSINESS CONTEXT:
+- Domain: {business_context.get('domain', 'general')}
+- Business Purpose: {business_context.get('business_purpose', 'Data analysis')}
+- Key Metrics: {', '.join(business_context.get('key_metrics', []))}
+- Business Questions to Answer:
+{chr(10).join('- ' + q for q in business_context.get('business_questions', [])[:5])}
+
+VISUALIZATION FOCUS:
+- Primary Story: {business_context.get('visualization_focus', {}).get('primary_story', 'Data insights')}
+- Key Comparisons: {', '.join(business_context.get('visualization_focus', {}).get('key_comparisons', []))}
+- Trends to Highlight: {', '.join(business_context.get('visualization_focus', {}).get('trends_to_highlight', []))}
+
+DATASET INFO:
+- Total rows: {len(full_df):,}
+- Total columns: {len(available_cols)}
+
+COLUMN ANALYSIS:
+{column_analysis['formatted']}
+
+SAMPLE DATA (first 3 rows):
+{sample_df.head(3).to_string()}
+
+IMPORTANT RULES FOR GOOD VISUALIZATIONS:
+1. NEVER use ID fields as metrics (columns ending in _ID, containing 'identifier', 'uuid', etc.)
+2. NEVER use counts/aggregations of ID fields (e.g., "Count of INCIDENT_ID")
+3. ID fields can ONLY be used for: counting distinct values, filtering, or as dimensions (not measures)
+4. Good metrics are: amounts, counts of events, percentages, averages, totals
+5. Good dimensions are: categories, dates, geographic locations, status fields
+
+METRIC COLUMNS (use for Y-axis): {', '.join(column_analysis.get('good_metrics', []))}
+DIMENSION COLUMNS (use for X-axis): {', '.join(column_analysis.get('good_dimensions', []))}
+ID COLUMNS (DO NOT use as metrics): {', '.join(column_analysis.get('id_columns', []))}
+
+YOUR TASK:
+Recommend 4-6 visualizations that make BUSINESS SENSE and answer real questions.
+
+For each recommendation, provide:
+- chart_type: one of [bar, line, scatter, pie, histogram]
+- title: Business-focused title (e.g., "Victim Count by Year" NOT "INCIDENT_ID by Year")
+- description: What business insight this provides
+- x_column: Dimension column (category, date, location)
+- y_column: Metric column (count, amount, average) - NEVER an ID field
+- priority: 1 (high - key business question), 2 (medium), or 3 (low)
+
+GOOD EXAMPLES:
+✅ "Victim Count Trend by Year" - x: DATA_YEAR, y: ADULT_VICTIM_COUNT
+✅ "Incidents by Organization" - x: ORI, y: count (will be aggregated)
+✅ "Victim Demographics Distribution" - x: age_group, y: victim_count
+
+BAD EXAMPLES:
+❌ "INCIDENT_ID by ORI" - INCIDENT_ID is an ID, not a metric
+❌ "Count of INCIDENT_ID" - Counting IDs is meaningless
+❌ "UUID Trend Analysis" - UUIDs are identifiers, not metrics
+
+Requirements:
+1. Each visualization must answer a real business question
+2. Use METRIC columns for Y-axis (amounts, counts, averages)
+3. Use DIMENSION columns for X-axis (categories, dates, locations)
+4. NEVER use ID columns as metrics
+5. Make titles actionable and business-focused
+
+Return ONLY a JSON array in this exact format:
+[
+  {{
+    "chart_type": "bar",
+    "title": "Sales Performance by Region - Q4 2024",
+    "description": "Answers: Which regions drive the most revenue? Compare regional performance to identify top performers.",
+    "x_column": "region",
+    "y_column": "sales",
+    "priority": 1
+  }}
+]
+
+Return only the JSON array, no markdown, no explanations."""
+        
+        return prompt
     
-    def _detect_business_domain(self, df: pd.DataFrame, user_context: str = None) -> Dict[str, Any]:
-        """Detect business domain and context from data with enhanced business focus"""
-        try:
-            column_names = [col.lower() for col in df.columns]
-            
-            # Enhanced domain detection patterns focusing on business metrics
-            domains = {
-                'sales': {
-                    'keywords': ['price', 'revenue', 'sales', 'order', 'customer', 'product', 'quantity', 'total', 'discount', 'profit', 'margin', 'commission'],
-                    'business_questions': [
-                        'Which products drive the most revenue?',
-                        'What are the sales trends over time?',
-                        'How do different customer segments perform?',
-                        'What is the seasonal pattern in sales?'
-                    ],
-                    'kpis': ['Total Revenue', 'Average Order Value', 'Customer Lifetime Value', 'Conversion Rate']
-                },
-                'finance': {
-                    'keywords': ['balance', 'profit', 'loss', 'investment', 'return', 'risk', 'asset', 'liability', 'portfolio', 'cash', 'expense', 'budget'],
-                    'business_questions': [
-                        'What is the ROI across different investments?',
-                        'How is cash flow trending?',
-                        'Which cost centers need attention?',
-                        'What are the risk indicators?'
-                    ],
-                    'kpis': ['ROI', 'Cash Flow', 'Profit Margin', 'Expense Ratio']
-                },
-                'marketing': {
-                    'keywords': ['campaign', 'conversion', 'click', 'impression', 'lead', 'traffic', 'engagement', 'ctr', 'cpc', 'acquisition'],
-                    'business_questions': [
-                        'Which campaigns generate the best ROI?',
-                        'How is customer acquisition trending?',
-                        'What channels drive the most conversions?',
-                        'Which demographics respond best?'
-                    ],
-                    'kpis': ['Customer Acquisition Cost', 'Conversion Rate', 'ROAS', 'Lead Quality Score']
-                },
-                'hr': {
-                    'keywords': ['employee', 'salary', 'performance', 'department', 'hire', 'skill', 'training', 'retention', 'satisfaction', 'productivity'],
-                    'business_questions': [
-                        'What are the retention rates by department?',
-                        'How does performance correlate with compensation?',
-                        'Which training programs show best ROI?',
-                        'What drives employee satisfaction?'
-                    ],
-                    'kpis': ['Employee Retention Rate', 'Performance Score', 'Training ROI', 'Satisfaction Index']
-                },
-                'operations': {
-                    'keywords': ['inventory', 'shipment', 'delivery', 'warehouse', 'logistics', 'supply', 'efficiency', 'cost', 'time', 'quality'],
-                    'business_questions': [
-                        'How can we optimize inventory levels?',
-                        'What are the delivery performance metrics?',
-                        'Which suppliers are most reliable?',
-                        'Where are the operational bottlenecks?'
-                    ],
-                    'kpis': ['Inventory Turnover', 'On-Time Delivery', 'Cost per Unit', 'Quality Score']
-                },
-                'entertainment': {
-                    'keywords': ['rating', 'score', 'title', 'genre', 'episode', 'movie', 'show', 'popularity', 'audience', 'engagement', 'views'],
-                    'business_questions': [
-                        'Which content performs best with audiences?',
-                        'What are the trending genres?',
-                        'How does content rating affect engagement?',
-                        'What drives audience retention?'
-                    ],
-                    'kpis': ['Audience Rating', 'View Count', 'Engagement Score', 'Content ROI']
-                }
-            }
-            
-            domain_scores = {}
-            for domain, domain_data in domains.items():
-                score = sum(1 for keyword in domain_data['keywords'] if any(keyword in col for col in column_names))
-                domain_scores[domain] = score
-            
-            # Determine primary domain
-            primary_domain = max(domain_scores, key=domain_scores.get) if max(domain_scores.values()) > 0 else 'general'
-            
-            # Get domain-specific business context
-            if primary_domain != 'general' and primary_domain in domains:
-                domain_context = domains[primary_domain]
-            else:
-                domain_context = {
-                    'business_questions': [
-                        'What are the key performance indicators?',
-                        'How are metrics trending over time?',
-                        'What patterns exist in the data?',
-                        'Which segments need attention?'
-                    ],
-                    'kpis': ['Performance Score', 'Growth Rate', 'Efficiency Ratio', 'Quality Index']
-                }
-            
-            return {
-                'domain': primary_domain,
-                'confidence': domain_scores[primary_domain] if primary_domain != 'general' else 0,
-                'business_questions': domain_context.get('business_questions', []),
-                'key_kpis': domain_context.get('kpis', []),
-                'user_context': user_context,
-                'business_focus': True  # Flag for business-oriented recommendations
-            }
-            
-        except Exception as e:
-            logger.error(f"Error detecting business domain: {str(e)}")
-            return {'domain': 'general', 'confidence': 0, 'context': {}}
-    
-    def _generate_recommendations(self, df: pd.DataFrame, profile: Dict[str, Any], business_context: Dict[str, Any]) -> List[VizRecommendation]:
-        """Generate business-focused visualization recommendations"""
+    def _parse_recommendations(self, response: str, df: pd.DataFrame, business_context: Dict[str, Any]) -> List[VizRecommendation]:
+        """Parse recommendations from OpenRouter response"""
         recommendations = []
         
         try:
-            numeric_cols = profile['numeric_columns']
-            categorical_cols = profile['categorical_columns']
-            datetime_cols = profile['datetime_columns']
+            # Try to extract JSON from response
+            response_clean = response.strip()
             
-            domain = business_context.get('domain', 'general')
-            business_questions = business_context.get('business_questions', [])
-            key_kpis = business_context.get('key_kpis', [])
+            # Remove markdown code blocks if present
+            if response_clean.startswith("```"):
+                lines = response_clean.split("\n")
+                response_clean = "\n".join(lines[1:-1]) if len(lines) > 2 else response_clean
             
-            # Filter out ID and technical columns for business focus
-            business_numeric_cols = [col for col in numeric_cols if not self._is_technical_column(col)]
-            business_categorical_cols = [col for col in categorical_cols if not self._is_technical_column(col)]
+            # Find JSON array
+            start_idx = response_clean.find("[")
+            end_idx = response_clean.rfind("]") + 1
             
-            # 1. KPI Performance Dashboard (Priority: Highest)
-            if business_numeric_cols:
-                main_metric = self._identify_main_kpi(business_numeric_cols, domain)
-                recommendations.append(VizRecommendation(
-                    chart_type='bar',
-                    title=f'Key Performance Indicators - {main_metric.title()}',
-                    description=f'Executive dashboard showing {main_metric} performance across key business dimensions',
-                    x_column=business_categorical_cols[0] if business_categorical_cols else main_metric,
-                    y_column=main_metric,
-                    aggregation='mean',
-                    business_context=f'Business KPI analysis for {domain} - {business_questions[0] if business_questions else "Performance tracking"}',
-                    priority=1
-                ))
-            
-            # 2. Business Trend Analysis (Time-based insights)
-            if datetime_cols and business_numeric_cols:
-                trend_metric = self._identify_trend_metric(business_numeric_cols, domain)
-                recommendations.append(VizRecommendation(
-                    chart_type='line',
-                    title=f'{trend_metric.title()} Trend Analysis',
-                    description=f'Track {trend_metric} performance over time to identify business patterns and seasonality',
-                    x_column=datetime_cols[0],
-                    y_column=trend_metric,
-                    business_context=f'Trend analysis for {domain} - {business_questions[1] if len(business_questions) > 1 else "Time-based performance"}',
-                    priority=1
-                ))
-            
-            # 3. Business Segment Analysis (Critical for decision-making)
-            if business_categorical_cols and business_numeric_cols:
-                segment_col = self._identify_business_segment(business_categorical_cols, domain)
-                performance_metric = self._identify_main_kpi(business_numeric_cols, domain)
+            if start_idx >= 0 and end_idx > start_idx:
+                json_str = response_clean[start_idx:end_idx]
+                recs_data = json.loads(json_str)
                 
-                recommendations.append(VizRecommendation(
-                    chart_type='bar',
-                    title=f'{performance_metric.title()} by {segment_col.title()}',
-                    description=f'Compare {performance_metric} performance across {segment_col} segments to identify opportunities',
-                    x_column=segment_col,
-                    y_column=performance_metric,
-                    aggregation='mean',
-                    business_context=f'Segment analysis for {domain} - {business_questions[2] if len(business_questions) > 2 else "Performance by segment"}',
-                    priority=1
-                ))
-            
-            # 4. Strategic Correlation Analysis (Business relationships)
-            if len(business_numeric_cols) >= 2:
-                primary_kpi = self._identify_main_kpi(business_numeric_cols, domain)
-                secondary_kpi = [col for col in business_numeric_cols if col != primary_kpi][0]
+                # Validate and create recommendations
+                available_cols = set(df.columns)
+                exclude_cols = set(business_context.get("columns_to_exclude", []))
                 
-                recommendations.append(VizRecommendation(
-                    chart_type='scatter',
-                    title=f'{primary_kpi.title()} vs {secondary_kpi.title()} Correlation',
-                    description=f'Strategic analysis of relationship between {primary_kpi} and {secondary_kpi} for investment decisions',
-                    x_column=secondary_kpi,
-                    y_column=primary_kpi,
-                    business_context=f'Strategic correlation for {domain} - Understanding key business drivers',
-                    priority=2
-                ))
-            
-            # 5. Market Share / Portfolio Analysis (Composition)
-            if business_categorical_cols:
-                portfolio_col = self._identify_portfolio_dimension(business_categorical_cols, domain)
-                recommendations.append(VizRecommendation(
-                    chart_type='pie',
-                    title=f'{portfolio_col.title()} Portfolio Distribution',
-                    description=f'Market share analysis showing distribution across {portfolio_col} for strategic planning',
-                    x_column=portfolio_col,
-                    business_context=f'Portfolio analysis for {domain} - Market positioning insights',
-                    priority=2
-                ))
-            
-            # 6. Performance Benchmarking (Box plot for variance analysis)
-            if business_categorical_cols and business_numeric_cols and len(business_numeric_cols) > 0:
-                benchmark_dimension = business_categorical_cols[0]
-                performance_metric = self._identify_main_kpi(business_numeric_cols, domain)
+                for rec_data in recs_data:
+                    # Validate columns exist and are not excluded
+                    x_col = rec_data.get("x_column")
+                    y_col = rec_data.get("y_column")
+                    
+                    if not x_col or x_col not in available_cols:
+                        continue
+                    if x_col in exclude_cols:
+                        continue
+                    if y_col and (y_col not in available_cols or y_col in exclude_cols):
+                        continue
+                    
+                    recommendations.append(VizRecommendation(
+                        chart_type=rec_data.get("chart_type", "bar"),
+                        title=rec_data.get("title", "Chart"),
+                        description=rec_data.get("description", ""),
+                        x_column=x_col,
+                        y_column=y_col,
+                        color_column=rec_data.get("color_column"),
+                        aggregation=rec_data.get("aggregation"),
+                        business_context=rec_data.get("description", ""),
+                        priority=rec_data.get("priority", 2)
+                    ))
                 
-                recommendations.append(VizRecommendation(
-                    chart_type='box',
-                    title=f'{performance_metric.title()} Performance Distribution by {benchmark_dimension.title()}',
-                    description=f'Benchmarking analysis showing {performance_metric} variance across {benchmark_dimension} for quality control',
-                    x_column=benchmark_dimension,
-                    y_column=performance_metric,
-                    business_context=f'Performance benchmarking for {domain} - Quality and consistency analysis',
-                    priority=2
-                ))
-            
-            return recommendations
-            
+                # Sort by priority
+                recommendations.sort(key=lambda x: x.priority)
+                
         except Exception as e:
-            logger.error(f"Error generating recommendations: {str(e)}")
-            return []
+            logger.error(f"Error parsing recommendations: {str(e)}")
+            logger.debug(f"Response was: {response[:500]}")
+        
+        return recommendations if recommendations else self._get_fallback_recommendations(df, business_context)
     
-    def _rank_recommendations(self, recommendations: List[VizRecommendation], profile: Dict[str, Any]) -> List[VizRecommendation]:
-        """Rank and filter recommendations based on data suitability"""
-        try:
-            # Filter out recommendations with missing columns
-            valid_recs = []
-            available_cols = set(profile['column_types'].keys())
-            
-            for rec in recommendations:
-                required_cols = {rec.x_column}
-                if rec.y_column:
-                    required_cols.add(rec.y_column)
-                if rec.color_column:
-                    required_cols.add(rec.color_column)
-                
-                if required_cols.issubset(available_cols):
-                    valid_recs.append(rec)
-            
-            # Sort by priority (1=high priority first)
-            valid_recs.sort(key=lambda x: (x.priority, x.chart_type))
-            
-            # Limit to top 6 recommendations
-            return valid_recs[:6]
-            
-        except Exception as e:
-            logger.error(f"Error ranking recommendations: {str(e)}")
-            return recommendations[:4]  # Fallback
-    
-    def _is_technical_column(self, column_name: str) -> bool:
-        """Check if a column is technical/ID column that should be excluded from business visualizations"""
-        col_lower = column_name.lower()
-        technical_patterns = [
-            'id', '_id', 'uuid', 'guid', 'key', 'hash', 'code', 'token',
-            'url', 'uri', 'link', 'href', 'path', 'file',
-            'image', 'img', 'jpg', 'png', 'gif', 'webp',
-            'internal', 'system', 'tech', 'admin', 'debug'
-        ]
-        return any(pattern in col_lower for pattern in technical_patterns)
-    
-    def _identify_main_kpi(self, numeric_columns: List[str], domain: str) -> str:
-        """Identify the main KPI based on business domain and column names"""
-        domain_kpi_patterns = {
-            'sales': ['revenue', 'sales', 'profit', 'total', 'amount', 'value', 'price'],
-            'finance': ['profit', 'return', 'balance', 'investment', 'cash', 'revenue'],
-            'marketing': ['conversion', 'click', 'impression', 'engagement', 'traffic'],
-            'hr': ['salary', 'performance', 'satisfaction', 'retention', 'productivity'],
-            'operations': ['cost', 'efficiency', 'time', 'quality', 'inventory'],
-            'entertainment': ['rating', 'score', 'popularity', 'views', 'engagement']
-        }
-        
-        patterns = domain_kpi_patterns.get(domain, ['score', 'value', 'amount', 'total'])
-        
-        for pattern in patterns:
-            for col in numeric_columns:
-                if pattern in col.lower():
-                    return col
-        
-        # Fallback to first numeric column
-        return numeric_columns[0] if numeric_columns else 'value'
-    
-    def _identify_trend_metric(self, numeric_columns: List[str], domain: str) -> str:
-        """Identify the best metric for trend analysis"""
-        trend_patterns = {
-            'sales': ['revenue', 'sales', 'orders', 'customers'],
-            'finance': ['profit', 'cash', 'revenue', 'expenses'],
-            'marketing': ['leads', 'conversions', 'traffic', 'engagement'],
-            'hr': ['hires', 'performance', 'satisfaction'],
-            'operations': ['production', 'shipments', 'inventory'],
-            'entertainment': ['views', 'ratings', 'engagement', 'popularity']
-        }
-        
-        patterns = trend_patterns.get(domain, ['count', 'total', 'value'])
-        
-        for pattern in patterns:
-            for col in numeric_columns:
-                if pattern in col.lower():
-                    return col
-        
-        return numeric_columns[0] if numeric_columns else 'value'
-    
-    def _identify_business_segment(self, categorical_columns: List[str], domain: str) -> str:
-        """Identify the best categorical column for business segmentation"""
-        segment_patterns = {
-            'sales': ['category', 'product', 'region', 'customer', 'channel', 'segment'],
-            'finance': ['department', 'category', 'type', 'region', 'portfolio'],
-            'marketing': ['channel', 'campaign', 'source', 'medium', 'segment'],
-            'hr': ['department', 'role', 'team', 'level', 'location'],
-            'operations': ['location', 'warehouse', 'supplier', 'category'],
-            'entertainment': ['genre', 'type', 'status', 'rating', 'source', 'studio']
-        }
-        
-        patterns = segment_patterns.get(domain, ['category', 'type', 'group', 'segment'])
-        
-        for pattern in patterns:
-            for col in categorical_columns:
-                if pattern in col.lower():
-                    return col
-        
-        return categorical_columns[0] if categorical_columns else 'category'
-    
-    def _identify_portfolio_dimension(self, categorical_columns: List[str], domain: str) -> str:
-        """Identify the best categorical column for portfolio/composition analysis"""
-        portfolio_patterns = {
-            'sales': ['product', 'category', 'region', 'channel'],
-            'finance': ['asset', 'investment', 'category', 'type'],
-            'marketing': ['channel', 'campaign', 'medium', 'source'],
-            'hr': ['department', 'role', 'team'],
-            'operations': ['location', 'supplier', 'category'],
-            'entertainment': ['genre', 'type', 'studio', 'rating']
-        }
-        
-        patterns = portfolio_patterns.get(domain, ['type', 'category', 'group'])
-        
-        for pattern in patterns:
-            for col in categorical_columns:
-                if pattern in col.lower():
-                    return col
-        
-        return categorical_columns[0] if categorical_columns else 'type'
-    
-    def _get_fallback_recommendations(self, df: pd.DataFrame) -> List[VizRecommendation]:
-        """Generate basic fallback recommendations"""
+    def _get_fallback_recommendations(self, df: pd.DataFrame, business_context: Dict[str, Any]) -> List[VizRecommendation]:
+        """Generate basic fallback recommendations using business context"""
         try:
             recommendations = []
-            columns = df.columns.tolist()
             
-            if len(columns) >= 1:
+            # Use business context to guide recommendations
+            prioritize_cols = business_context.get("columns_to_prioritize", [])
+            exclude_cols = set(business_context.get("columns_to_exclude", []))
+            
+            numeric_cols = [col for col in df.select_dtypes(include=['number']).columns.tolist() if col not in exclude_cols]
+            categorical_cols = [col for col in df.select_dtypes(include=['object', 'category']).columns.tolist() if col not in exclude_cols]
+            
+            # Prioritize columns from business context
+            if prioritize_cols:
+                numeric_cols = [col for col in prioritize_cols if col in numeric_cols] + [col for col in numeric_cols if col not in prioritize_cols]
+                categorical_cols = [col for col in prioritize_cols if col in categorical_cols] + [col for col in categorical_cols if col not in prioritize_cols]
+            
+            domain = business_context.get("domain", "general")
+            key_metrics = business_context.get("key_metrics", numeric_cols[:2])
+            
+            # Bar chart - key metric by category
+            if categorical_cols and numeric_cols:
                 recommendations.append(VizRecommendation(
                     chart_type='bar',
-                    title=f'Analysis of {columns[0]}',
-                    description=f'Basic analysis of {columns[0]}',
-                    x_column=columns[0],
-                    y_column=columns[1] if len(columns) > 1 else None,
-                    business_context='General analysis',
+                    title=f'{key_metrics[0] if key_metrics else numeric_cols[0]} by {categorical_cols[0]}',
+                    description=f'Compare {key_metrics[0] if key_metrics else numeric_cols[0]} across {categorical_cols[0]} - answers business question about performance by segment',
+                    x_column=categorical_cols[0],
+                    y_column=key_metrics[0] if key_metrics else numeric_cols[0],
                     priority=1
                 ))
             
-            return recommendations
+            # Line chart for trends
+            if len(numeric_cols) >= 1:
+                recommendations.append(VizRecommendation(
+                    chart_type='line',
+                    title=f'{key_metrics[0] if key_metrics else numeric_cols[0]} Trend Analysis',
+                    description=f'Track {key_metrics[0] if key_metrics else numeric_cols[0]} over time to identify trends',
+                    x_column=df.columns[0] if df.columns[0] not in exclude_cols else numeric_cols[0],
+                    y_column=key_metrics[0] if key_metrics else numeric_cols[0],
+                    priority=1
+                ))
+            
+            # Scatter plot for correlations
+            if len(numeric_cols) >= 2:
+                recommendations.append(VizRecommendation(
+                    chart_type='scatter',
+                    title=f'{numeric_cols[0]} vs {numeric_cols[1]} Correlation',
+                    description=f'Analyze relationship between {numeric_cols[0]} and {numeric_cols[1]}',
+                    x_column=numeric_cols[0],
+                    y_column=numeric_cols[1],
+                    priority=2
+                ))
+            
+            # Pie chart for distribution
+            if categorical_cols:
+                recommendations.append(VizRecommendation(
+                    chart_type='pie',
+                    title=f'{categorical_cols[0]} Distribution',
+                    description=f'Distribution across {categorical_cols[0]} categories',
+                    x_column=categorical_cols[0],
+                    priority=2
+                ))
+            
+            return recommendations[:6]  # Limit to 6
             
         except Exception as e:
             logger.error(f"Error in fallback recommendations: {str(e)}")
@@ -583,9 +426,7 @@ class VizRecommendationAgent:
                     'x_column': rec.x_column,
                     'y_column': rec.y_column,
                     'color_column': rec.color_column,
-                    'size_column': rec.size_column,
                     'aggregation': rec.aggregation,
-                    'filters': rec.filters,
                     'business_context': rec.business_context,
                     'priority': rec.priority
                 })
