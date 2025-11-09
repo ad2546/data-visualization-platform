@@ -1,0 +1,7 @@
+theme: jekyll-theme-cayman
+title: AI-Powered Data Visualization Platform
+description: Transform your data into beautiful, interactive dashboards with KPI-focused visualizations powered by AI
+show_downloads: true
+github:
+  repository_url: https://github.com/ad2546/data-visualization-platform
+  repository_name: data-visualization-platform

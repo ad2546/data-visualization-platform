@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Data Visualization Platform</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-green: #3fb950;
+            --accent-orange: #f0883e;
+            --accent-red: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section h2 {
+            font-size: 36px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .cta-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #79c0ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .screenshot {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .screenshot img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🎨 AI-Powered Data Visualization Platform</h1>
+        <p>Transform your data into beautiful, interactive dashboards with KPI-focused visualizations powered by AI</p>
+        <div class="badges">
+            <span class="badge">🤖 OpenRouter API</span>
+            <span class="badge">📊 Plotly.js Charts</span>
+            <span class="badge">🎯 KPI-Focused</span>
+            <span class="badge">⚡ 85% Token Reduction</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="section">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Token Reduction</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">AI Stages</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Sample Datasets</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Chart Types</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="section">
+            <h2>✨ Key Features</h2>
+            <p>Everything you need to turn raw data into actionable insights</p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Sample Data Testing</h3>
+                    <p>One-click access to pre-loaded datasets with KPI-focused visualizations. Test instantly without uploading files.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌙</div>
+                    <h3>Dark Theme UI</h3>
+                    <p>Modern GitHub-inspired dark interface with inline chart rendering and real-time progress updates.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>3-Stage AI Pipeline</h3>
+                    <p>Business Context Analysis → Visualization Recommendations → Code Generation with intelligent fallbacks.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>KPI-Focused Visualizations</h3>
+                    <p>Intelligent column analysis ensures meaningful charts. No ID fields as metrics, only business KPIs.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Template + Snippets</h3>
+                    <p>85% token reduction using base template with LLM-generated chart snippets. Faster and more cost-effective.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Error Visibility</h3>
+                    <p>See LLM errors, fallback indicators, and detailed error messages per chart for full transparency.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="section">
+            <h2>🚀 Quick Start (30 seconds)</h2>
+            <p>Get started with sample data in three simple steps</p>
+
+            <div class="code-block">
+# Clone the repository<br>
+git clone https://github.com/ad2546/data-visualization-platform.git<br>
+cd data-visualization-platform<br>
+<br>
+# Install dependencies<br>
+pip install -r requirements.txt<br>
+<br>
+# Set up OpenRouter API key<br>
+cp .env.example .env<br>
+# Edit .env and add: OPENROUTER_API_KEY=your_key_here<br>
+<br>
+# Start the server<br>
+python -m uvicorn app.main:app --reload<br>
+<br>
+# Open http://localhost:8000<br>
+# Click "Sales Performance" sample data button<br>
+# Watch AI generate your dashboard!
+            </div>
+        </div>
+
+        <!-- Architecture -->
+        <div class="section">
+            <h2>🏗️ Architecture</h2>
+            <p>Built with modern tools and best practices</p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🐍</div>
+                    <h3>FastAPI Backend</h3>
+                    <p>High-performance async API with real-time status updates and session management.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>OpenRouter Integration</h3>
+                    <p>Access to multiple LLM providers with intelligent fallback chain for reliability.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Plotly.js Charts</h3>
+                    <p>Interactive, responsive charts with zoom, pan, hover, and export capabilities.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Responsive Design</h3>
+                    <p>Works beautifully on desktop, tablet, and mobile devices with adaptive layouts.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Datasets -->
+        <div class="section">
+            <h2>📁 Sample Datasets</h2>
+            <p>Pre-loaded datasets designed for meaningful KPI visualizations</p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Sales Performance</h3>
+                    <p><strong>30 rows, 10 columns</strong><br>
+                    E-commerce sales with revenue, profit, customer satisfaction by region and product category.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>HR Metrics</h3>
+                    <p><strong>20 rows, 10 columns</strong><br>
+                    Employee performance, salary, training hours, satisfaction scores by department.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Website Analytics</h3>
+                    <p><strong>30 rows, 10 columns</strong><br>
+                    Page views, conversions, bounce rate, revenue by traffic source and device type.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Hate Crime Statistics</h3>
+                    <p><strong>219k rows, 28 columns</strong><br>
+                    Large public dataset demonstrating platform's ability to handle substantial data volumes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="section">
+            <div class="cta-section">
+                <h2>🎉 Ready to Transform Your Data?</h2>
+                <p style="font-size: 18px; margin-top: 16px;">Get started with our AI-powered visualization platform today</p>
+
+                <div class="cta-buttons">
+                    <a href="https://github.com/ad2546/data-visualization-platform" class="btn btn-primary" target="_blank">
+                        View on GitHub
+                    </a>
+                    <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/QUICKSTART_SAMPLE_DATA.md" class="btn btn-secondary" target="_blank">
+                        Quick Start Guide
+                    </a>
+                    <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/SAMPLE_DATA_FEATURE.md" class="btn btn-secondary" target="_blank">
+                        Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Links -->
+        <div class="section">
+            <h2>📚 Documentation</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Quick Guides</h3>
+                    <p>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/QUICKSTART_SAMPLE_DATA.md" style="color: var(--accent-blue);">30-Second Quick Start</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/QUICKSTART.md" style="color: var(--accent-blue);">General Quick Start</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/RUN.md" style="color: var(--accent-blue);">Running the Application</a>
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Feature Docs</h3>
+                    <p>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/SAMPLE_DATA_FEATURE.md" style="color: var(--accent-blue);">Sample Data Feature</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/WHATS_NEW_V3.md" style="color: var(--accent-blue);">Dark Theme & Inline Charts</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/TEMPLATE_APPROACH.md" style="color: var(--accent-blue);">Template Architecture</a>
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>Technical Docs</h3>
+                    <p>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/PIPELINE.md" style="color: var(--accent-blue);">3-Stage Pipeline</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/PROMPT_OPTIMIZATION.md" style="color: var(--accent-blue);">Prompt Engineering</a><br>
+                        • <a href="https://github.com/ad2546/data-visualization-platform/blob/feature/sample-data-kpi-visualizations/FREE_MODELS.md" style="color: var(--accent-blue);">Free LLM Models</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Built with ❤️ using FastAPI, OpenRouter, and Plotly.js</p>
+        <p style="margin-top: 8px;">🤖 Generated with <a href="https://claude.com/claude-code" style="color: var(--accent-blue);">Claude Code</a></p>
+    </footer>
+</body>
+</html>
